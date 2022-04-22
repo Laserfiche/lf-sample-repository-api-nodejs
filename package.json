@@ -1,0 +1,21 @@
+{
+    "name": "laserfiche-repository-api-client-example",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Retrieve entries from a Laserfiche repository using the Laserfiche API and the the client credentials flow.",
+    "main": "dist/GetEntries.js",
+    "scripts": {
+        "start": "npm run build && node dist/GetEntries.js",
+        "build": "tsc -b",
+        "clean": "tsc -b --clean",
+        "example": "cd example && npm i && npm start"
+    },
+    "author": "Laserfiche",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "dotenv": "^16.0.0",
+        "laserfiche-repository-api-client": "file:..",
+        "laserfiche-service-app-oauth-client": "^1.0.780637"
+    },
+    "devDependencies": {}
+}
