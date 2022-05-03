@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { ClientCredentialsGrantHandler,  ClientCredentialsOptions, AccessKey} from 'laserfiche-service-app-oauth-client';
-import { Client, ClientOptions } from 'laserfiche-repository-api-client';
+import { ClientCredentialsGrantHandler,  ClientCredentialsOptions, AccessKey, createClientCredentialsHandler} from '@laserfiche/lf-oauth-api-client';
+import { Client, ClientOptions } from '@laserfiche/lf-repository-api-client';
 
 let repoBaseUrl = "http://api.a.clouddev.laserfiche.com/repository";
 
@@ -21,15 +21,11 @@ async function getAccessToken() : Promise<string> {
     console.log("Retrieving access token...");
 
     // Import our access and service principal keys 
-    let testKey: AccessKey = JSON.parse(process.env.ACCESS_KEY ?? ""); // Remember to JSON.parse your stringified access key
-    let testServicePrincipalKey: string = process.env.SERVICE_PRINCIPAL_KEY ?? "";
+    let testKey = process.env.ACCESS_KEY ?? ""; // Remember to JSON.parse your stringified access key
+    let testServicePrincipalKey = process.env.SERVICE_PRINCIPAL_KEY ?? "";
 
-    let options: ClientCredentialsOptions = {
-        servicePrincipalKey: testServicePrincipalKey,
-        accessKey: testKey
-    }
+    let credentials = createClientCredentialsHandler(testKey, testServicePrincipalKey);
 
-    let credentials = new ClientCredentialsGrantHandler(options);
     let token = await credentials.getAccessToken();
     if (token) {
         console.log("Access token retrieved: " + token?.access_token);
