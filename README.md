@@ -1,62 +1,58 @@
 # lf-sample-repository-api-nodejs
 
-Retrieve entries from a Laserfiche repository using the Laserfiche API and the client credentials flow.
+Sample node service app that connects to a Laserfiche Cloud Repository using a service principal account.
+[Sample Code](./index.ts)
 
-### How to run the sample app locally
+### Prerequisites
 
-#### 1. Create a Service app on the [Laserfiche Developer Console](https://app.laserfiche.com/devconsole/)
-Ensure that the Service app is properly configured with a valid Service Principal and at least one access key.
+#### Software Prerequisites
 
-#### 2. Create an .env file 
-In your root directory, create an empty .env file which will store the Service Principal Key, OAUTH_ACCESS_KEY, and RepoId
+- Visual Studio Code
+- Node 14 LTS
+- TypeScript
+- Git
 
-#### 3. Create a couple process variables in the .env file 
-Add the corresponding credentials from the service app you created in step 1 using the same format as this example below:
+#### 1. Create a Service Principal
 
-```typescript
-SERVICE_PRINCIPAL_KEY:string//the service principal value should  
+- Login to account using web access as an administrator
+- Using the app picker, go to the account page
+- Click on the service principal tab
+- Click on the 'Add Service Principal' button to create an account to be used to run this sample service
+- Click on 'Create Service Principal Key(s)'
+- Save the key for later use
 
-OAUTH_ACCESS_KEY='{"customerId":string,"domain":string,"clientId":string,"jwk":{"kty":"EC","crv":"P-256","use":"sig","kid":string,"x":string,"y":string,"d":string}}'
+#### 2. Create an OAuth Service App
 
-REPOSITORY_ID_1:string
+- Navigate to [Laserfiche Developer Console](https://app.laserfiche.com/devconsole/)
+- Click on 'New' -> 'Create a new app'
+- Select 'Service', enter a unique name
+- Select the app service account to be the one created on step 1
+- Click on the 'Authentication' Tab and create a new AccessKey
+- Copy the accessKey for later use
+
+#### 3. Create a .env file
+
+- Using the app picker, go to the 'Repository Administration' page and copy the Repository ID
+- In the root directory of this project, create an .env file containing the following lines:
+
+```bash
+SERVICE_PRINCIPAL_KEY="<Service Principal Key created from step 1>"
+
+OAUTH_ACCESS_KEY='<Access Key JSON created from step 2>'
+
+REPOSITORY_ID_1="<Repository ID>"
 ```
-#### 4. Install npm dependencies 
+
+## Build and Run this App
+
+- Clone this repo on your local machine
+- Open with Visual Studio Code
+- On a terminal window, enter the following commands:
+
 ```bash
 npm i
-```
-#### 5. Build this Project 
-```bash
 npm run build
-```
-#### 6. Run this project
-```bash
 npm run start
 ```
 
-#### How the sample project works 
-#### Example: Retrieving a Repository Entry
-#### 1. Create a RepoAPIClient by passing in the .env process variables to the constructor
-
-```typescript
-    import {
-        RepositoryApiClient
-    } from '@laserfiche/lf-repository-api-client';
-
-    const repositoryApiClient = RepositoryApiClient.create(
-        process.env.SERVICE_PRINCIPAL_KEY,
-        process.env.OAUTH_ACCESS_KEY
-    );
-```
-If successful, this will set an access token as the bearer token in the Authorization header and you can now make authorized requests to the Laserfiche API.
-
-#### 2. Retrieve and print out a Repository Entry by calling the getEntry method from the entry interface of that instance
-```typescript
-    const rootFolderEntryId: number = 1;
-    let entryResponse: Entry = await repositoryApiClient.entriesClient.getEntry({
-        process.env.REPOSITORY_ID_1,
-        entryId: rootFolderEntryId,
-    });
-    console.log(`Root Folder Name: ${entryResponse.name}`);
-```
-
-
+These commands will install, compile, and execute this program which will print out the repository information in the output window.
