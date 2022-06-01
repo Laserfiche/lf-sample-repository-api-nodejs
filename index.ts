@@ -4,7 +4,7 @@ import {
   Entry,
   ODataValueContextOfIListOfEntry,
 } from '@laserfiche/lf-repository-api-client';
-import { OAuthAccessKey, servicePrincipalKey, repoId, baseUrlDebug } from './ServiceConfig.js';
+import { OAuthAccessKey, servicePrincipalKey, repoId} from './ServiceConfig.js';
 
 const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
 const rootFolderEntryId: number = 1;

@@ -12,5 +12,3 @@ accessKey = accessKey?.replace('"{', '{');
 accessKey = accessKey?.replace('}"', '}');
 export const OAuthAccessKey: AccessKey = JSON.parse(accessKey ?? '');
 export const repoId: string = process.env.REPOSITORY_ID_1 ?? '';
-let domain = JSON.stringify(OAuthAccessKey.domain).replace(/"/g,'');
-export const baseUrlDebug:string = DomainUtils.getRepositoryEndpoint(domain);
