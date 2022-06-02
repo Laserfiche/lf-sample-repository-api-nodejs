@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { AccessKey, DomainUtils } from '@laserfiche/lf-api-client-core';
+import { AccessKey } from '@laserfiche/lf-api-client-core';
 export const servicePrincipalKey: string =
   process.env.SERVICE_PRINCIPAL_KEY ?? '';
 if (!servicePrincipalKey) {
