@@ -7,15 +7,16 @@ import {
 } from '@laserfiche/lf-repository-api-client';
 import { OAuthAccessKey, servicePrincipalKey, repoId } from './ServiceConfig.js';
 
+//Create a Laserfiche Repository API Client 
 const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
 const rootFolderEntryId: number = 1;
 
 await main();
 
 async function main(): Promise<void> {
-  const repoName: string = await getRepoName();
-  const rootFolder: Entry = await getRootFolder();
-  const rootFolderChildren: Entry[] = await getFolderChildren(rootFolderEntryId);
+  const repoName: string = await getRepoName(); //Print repository name
+  const rootFolder: Entry = await getRootFolder(); //Print root folder name
+  const rootFolderChildren: Entry[] = await getFolderChildren(rootFolderEntryId); //Print root folder children
 }
 
 async function getRepoName(): Promise<string> {
@@ -51,6 +52,9 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
 }
 
 function createRepoAPIClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, JSON.stringify(OAuthAccessKey));
+  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(
+    servicePrincipalKey,
+    JSON.stringify(OAuthAccessKey)
+  );
   return repositoryApiClient;
 }
