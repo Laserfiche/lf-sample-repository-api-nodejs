@@ -54,7 +54,7 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
 function createRepoAPIClient(): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromAccessKey(
     servicePrincipalKey,
-    JSON.stringify(OAuthAccessKey)
+    OAuthAccessKey
   );
   return repositoryApiClient;
 }
