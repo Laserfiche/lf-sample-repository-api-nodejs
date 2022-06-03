@@ -4,7 +4,7 @@ export const servicePrincipalKey: string = process.env.SERVICE_PRINCIPAL_KEY ?? 
 if (!servicePrincipalKey) {
   throw new Error(`Unable to load SERVICE_PRINCIPAL_KEY from .env`);
 }
-let accessKey: string = process.env.OAUTH_ACCESS_KEY ?? '';
+let accessKey: string = process.env.DEV_CA_PUBLIC_USE_INTEGRATION_TEST_ACCESS_KEY ?? '';
 if (!accessKey){
   throw new Error(`Unable to load accessKey from .env`);
 }
