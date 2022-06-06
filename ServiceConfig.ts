@@ -11,7 +11,3 @@ if (!accessKeyBase64){
 }
 export const OAuthAccessKey: AccessKey = JSON.parse(Buffer.from(accessKeyBase64, 'base64').toString() ?? '');
 export const repoId: string = process.env.DEV_CA_PUBLIC_USE_REPOSITORY_ID_1 ?? '';
-if (!repoId){
-  throw new Error(`Unable to load repoId from .env`);
-}
-
