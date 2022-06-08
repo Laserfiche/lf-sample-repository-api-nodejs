@@ -35,9 +35,9 @@ jobs:
       
       - name: Npm run build
         run: npm run build
-        
-      - name: Echo NPM package version
-        run: echo ${{ env.NPM_VERSION }}
+      
+      - name: Npm run start
+        run: npm run start
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.3.1
