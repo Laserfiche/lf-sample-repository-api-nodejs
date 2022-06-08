@@ -6,6 +6,7 @@
     "main": "dist/index.js",
     "scripts": {
         "start": "npm run build && node dist/index.js",
+        "lint": "eslint.js",
         "build": "tsc -b --clean && tsc -b"
     },
     "author": "Laserfiche",
