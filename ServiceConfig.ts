@@ -6,7 +6,7 @@ export const servicePrincipalKey: string =
 if (!servicePrincipalKey) {
   throw new Error(`Unable to load SERVICE_PRINCIPAL_KEY from .env`);
 }
-let accessKeyBase64: string = process.env.ACCESS_KEY ?? '';
+const accessKeyBase64: string = process.env.ACCESS_KEY ?? '';
 if (!accessKeyBase64){
   throw new Error(`Unable to load ACCESS_KEY from .env`);
 }

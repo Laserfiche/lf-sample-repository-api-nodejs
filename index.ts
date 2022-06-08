@@ -9,7 +9,7 @@ import { OAuthAccessKey, servicePrincipalKey, repoId } from './ServiceConfig.js'
 
 //Create a Laserfiche Repository API Client 
 const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
-const rootFolderEntryId: number = 1;
+const rootFolderEntryId = 1;
 
 await main();
 
@@ -45,7 +45,7 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
   });
   const children: Entry[] = result.value ?? [];
   for (let i = 0; i < children.length; i++) {
-    let child: Entry = children[i];
+    const child: Entry = children[i];
     console.log(`${i}:[${child.entryType}] '${child.name}'`);
   }
   return children;
