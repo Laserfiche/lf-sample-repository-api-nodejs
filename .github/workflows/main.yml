@@ -42,14 +42,3 @@ jobs:
             SERVICE_PRINCIPAL_KEY:  ${{ secrets.DEV_CA_PUBLIC_USE_TESTOAUTHSERVICEPRINCIPAL_SERVICE_PRINCIPAL_KEY }}
             REPOSITORY_ID:  ${{ secrets.DEV_CA_PUBLIC_USE_REPOSITORY_ID_1 }}
         run: npm run start
-
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.3.1
-        with:
-          name: npm-publish-artifact
-          # A file, directory or wildcard pattern that describes what to upload
-          path: |
-            ./dist
-            ./package.json
-            ./README.md
-            ./LICENSE
