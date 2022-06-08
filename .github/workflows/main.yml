@@ -37,6 +37,10 @@ jobs:
         run: npm run build
       
       - name: Npm run start
+        env:
+            ACCESS_KEY: ${{ secrets.DEV_CA_PUBLIC_USE_INTEGRATION_TEST_ACCESS_KEY }}
+            SERVICE_PRINCIPAL_KEY:  ${{ secrets.DEV_CA_PUBLIC_USE_TESTOAUTHSERVICEPRINCIPAL_SERVICE_PRINCIPAL_KEY }}
+            REPOSITORY_ID:  ${{ secrets.DEV_CA_PUBLIC_USE_REPOSITORY_ID_1 }}
         run: npm run start
 
       - name: Upload a Build Artifact
