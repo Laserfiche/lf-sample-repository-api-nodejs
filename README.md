@@ -11,6 +11,7 @@ Sample node service app that connects to a Laserfiche Cloud Repository using a s
 - Node 14 LTS
 - TypeScript
 - Git
+- A fetch polyfill package, ex. [isomorphic-fetch](https://www.npmjs.com/package/isomorphic-fetch)
 
 #### 1. Create a Service Principal
 
