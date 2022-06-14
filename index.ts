@@ -22,7 +22,8 @@ async function main(): Promise<void> {
 async function getRepoName(): Promise<string> {
   const response: RepositoryInfo[] = await _RepositoryApiClient.repositoriesClient.getRepositoryList({});
   const repoName = response[0].repoName ?? '';
-  console.log(`Repository Name: '${repoName}'`);
+  const repoId = response[0].repoId  ?? '';
+  console.log(`Repository Name: '${repoName} [${repoId}]'`);
   return repoName;
 }
 
@@ -46,7 +47,7 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
   const children: Entry[] = result.value ?? [];
   for (let i = 0; i < children.length; i++) {
     const child: Entry = children[i];
-    console.log(`${i}:[${child.entryType}] '${child.name}'`);
+    console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
   }
   return children;
 }

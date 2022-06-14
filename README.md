@@ -28,7 +28,7 @@ Sample node service app that connects to a Laserfiche Cloud Repository using a s
 - Select 'Service', enter a unique name
 - Select the app service account to be the one created on step 1
 - Click on the 'Authentication' Tab and create a new AccessKey
-- Copy the accessKey for later use
+- Download key as 'base-64 string' for later use
 
 #### 3. Create a .env file
 
@@ -38,9 +38,9 @@ Sample node service app that connects to a Laserfiche Cloud Repository using a s
 ```bash
 SERVICE_PRINCIPAL_KEY="<Service Principal Key created from step 1>"
 
-OAUTH_ACCESS_KEY='<Access Key JSON created from step 2>'
+OAUTH_ACCESS_KEY='<base-64 Access Key from step 2>'
 
-REPOSITORY_ID_1="<Repository ID>"
+REPOSITORY_ID="<Repository ID>"
 ```
 
 ## Build and Run this App
