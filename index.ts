@@ -7,22 +7,27 @@ import {
 } from '@laserfiche/lf-repository-api-client';
 import { OAuthAccessKey, servicePrincipalKey, repoId } from './ServiceConfig.js';
 
-//Create a Laserfiche Repository API Client 
+//Create a Laserfiche Repository API Client
 const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
 const rootFolderEntryId = 1;
 
 await main();
 
 async function main(): Promise<void> {
-  const repoName: string = await getRepoName(); //Print repository name
-  const rootFolder: Entry = await getRootFolder(); //Print root folder name
-  const rootFolderChildren: Entry[] = await getFolderChildren(rootFolderEntryId); //Print root folder children
+  try {
+    const repoName: string = await getRepoName(); //Print repository name
+    const rootFolder: Entry = await getRootFolder(); //Print root folder name
+    const rootFolderChildren: Entry[] = await getFolderChildren(rootFolderEntryId); //Print root folder children
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function getRepoName(): Promise<string> {
   const response: RepositoryInfo[] = await _RepositoryApiClient.repositoriesClient.getRepositoryList({});
   const repoName = response[0].repoName ?? '';
-  console.log(`Repository Name: '${repoName}'`);
+  const repoId = response[0].repoId ?? '';
+  console.log(`Repository Name: '${repoName} [${repoId}]'`);
   return repoName;
 }
 
@@ -46,15 +51,12 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
   const children: Entry[] = result.value ?? [];
   for (let i = 0; i < children.length; i++) {
     const child: Entry = children[i];
-    console.log(`${i}:[${child.entryType}] '${child.name}'`);
+    console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
   }
   return children;
 }
 
 function createRepoAPIClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(
-    servicePrincipalKey,
-    OAuthAccessKey
-  );
+  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey);
   return repositoryApiClient;
 }
