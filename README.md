@@ -62,9 +62,9 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 
 ```bash
 npm i
-npm run build
 npm run start
 ```
+
 These commands will install, compile, and execute this program which will print out the repository information in the output window.
 Note: This project uses the [@laserfiche/lf-repository-api-client
  NPM package](https://www.npmjs.com/package/@laserfiche/lf-repository-api-client). See [Laserfiche Repository API Documentation](https://developer.laserfiche.com/libraries.html).
