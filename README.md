@@ -11,6 +11,7 @@ Sample node service app that connects to a Laserfiche Cloud Repository using a s
 - Node 14 LTS
 - TypeScript
 - Git
+- Clone this repo on your local machine
 
 #### 1. Create a Service Principal
 
@@ -45,7 +46,6 @@ REPOSITORY_ID="<Repository ID>"
 
 ## Build and Run this App
 
-- Clone this repo on your local machine
 - Open with Visual Studio Code
 - On a terminal window, enter the following commands:
 

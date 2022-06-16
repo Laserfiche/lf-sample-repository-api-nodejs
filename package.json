@@ -10,7 +10,7 @@
         "build": "tsc -b --clean && tsc -b"
     },
     "author": "Laserfiche",
-    "license": "Apache-2.0",
+    "license": "MIT",
     "dependencies": {
         "@laserfiche/lf-api-client-core": "^1.0.1",
         "@laserfiche/lf-js-utils": "3.0.5",
