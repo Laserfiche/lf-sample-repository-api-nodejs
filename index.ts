@@ -6,6 +6,7 @@ import {
   RepositoryInfo,
 } from '@laserfiche/lf-repository-api-client';
 import { OAuthAccessKey, servicePrincipalKey, repoId } from './ServiceConfig.js';
+import 'isomorphic-fetch';
 
 //Create a Laserfiche Repository API Client
 const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
