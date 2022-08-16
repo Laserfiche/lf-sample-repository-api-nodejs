@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { AccessKey} from '@laserfiche/lf-api-client-core';
+import { AccessKey, createFromBase64EncodedAccessKey} from '@laserfiche/lf-api-client-core';
 export const servicePrincipalKey: string =
   process.env.SERVICE_PRINCIPAL_KEY ?? '';
 if (!servicePrincipalKey) {
@@ -9,5 +9,5 @@ const accessKeyBase64: string = process.env.ACCESS_KEY ?? '';
 if (!accessKeyBase64){
   throw new Error(`Unable to load ACCESS_KEY from .env`);
 }
-export const OAuthAccessKey: AccessKey = AccessKey.createFromBase64EncodedAccessKey(accessKeyBase64 ?? '');
+export const OAuthAccessKey: AccessKey = createFromBase64EncodedAccessKey(accessKeyBase64 ?? '');
 export const repoId: string = process.env.REPOSITORY_ID ?? '';
