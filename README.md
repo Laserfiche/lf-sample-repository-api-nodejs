@@ -62,7 +62,7 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 
 - Node 14 LTS
 - TypeScript
-- CA, EU, or US Cloud Web Client account
+- Set up Self-Hosted API Server 1.0+
 
 ### 1. Clone this repo on your local machine
 
