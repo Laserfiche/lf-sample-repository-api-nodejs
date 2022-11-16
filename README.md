@@ -84,7 +84,6 @@ APISERVER_REPOSITORY_API_BASE_URL="<API Server Base Url (ex: https://example.com
 - Note: The .env file is used in local development environment to set operating system environment variables. DO NOT
   check-in the .env file in Git
 
-
 ## Build and Run this App
 
 - Open a terminal window
