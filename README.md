@@ -14,11 +14,9 @@ Sample node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 ### 1. Create a Service Principal
 
 - Log in to your account using Web Client as an administrator:
-
   - [CA Cloud](https://app.laserfiche.ca/laserfiche)
   - [EU Cloud](https://app.eu.laserfiche.com/laserfiche)
   - [US Cloud](https://app.laserfiche.com/laserfiche)
-
 - Using the app picker, go to the 'Account' page
 - Click on the 'Service Principals' tab
 - Click on the 'Add Service Principal' button to create an account to be used to run this sample service
