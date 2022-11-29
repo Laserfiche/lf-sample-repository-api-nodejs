@@ -16,9 +16,9 @@ await main();
 
 async function main(): Promise<void> {
   try {
-    const repoName: string = await getRepoName(); //Print repository name
-    const rootFolder: Entry = await getRootFolder(); //Print root folder name
-    const rootFolderChildren: Entry[] = await getFolderChildren(rootFolderEntryId); //Print root folder children
+    await getRepoName(); //Print repository name
+    await getRootFolder(); //Print root folder name
+    await getFolderChildren(rootFolderEntryId); //Print root folder children
   } catch (err) {
     console.error(err);
   }
