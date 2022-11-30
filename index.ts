@@ -5,18 +5,34 @@ import {
   ODataValueContextOfIListOfEntry,
   RepositoryInfo,
 } from '@laserfiche/lf-repository-api-client';
-import { OAuthAccessKey, servicePrincipalKey, repoId } from './ServiceConfig.js';
+import {
+  OAuthAccessKey,
+  servicePrincipalKey,
+  repositoryId,
+  authorizationType,
+  username,
+  password,
+  baseUrl,
+} from './ServiceConfig.js';
 import 'isomorphic-fetch';
+import { authorizationTypeEnum as authType} from './AuthorizationType.js';
 
 //Create a Laserfiche Repository API Client
-const _RepositoryApiClient: IRepositoryApiClient = createRepoAPIClient();
+let _RepositoryApiClient: IRepositoryApiClient;
 const rootFolderEntryId = 1;
 
 await main();
 
 async function main(): Promise<void> {
   try {
-    await getRepoName(); //Print repository name
+    if (authorizationType === authType.CloudAccessKey) {
+      _RepositoryApiClient = createRepoAPIClient();
+    } else if (authorizationType === authType.APIServerUsernamePassword) {
+      _RepositoryApiClient = createSelfHostedRepoClient();
+    } else {
+      console.error("Invalid value for 'AUTHORIZATION_TYPE'. It can only be 'CloudAccessKey' or 'APIServerUsernamePassword'.");
+    }
+    await getRepositoryName(); //Print repository name
     await getRootFolder(); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
   } catch (err) {
@@ -24,7 +40,7 @@ async function main(): Promise<void> {
   }
 }
 
-async function getRepoName(): Promise<string> {
+async function getRepositoryName(): Promise<string> {
   const response: RepositoryInfo[] = await _RepositoryApiClient.repositoriesClient.getRepositoryList({});
   const repoName = response[0].repoName ?? '';
   const repoId = response[0].repoId ?? '';
@@ -34,7 +50,7 @@ async function getRepoName(): Promise<string> {
 
 async function getRootFolder(): Promise<Entry> {
   const entryResponse: Entry = await _RepositoryApiClient.entriesClient.getEntry({
-    repoId,
+    repoId: repositoryId,
     entryId: rootFolderEntryId,
   });
   const rootFolderName = entryResponse.name && entryResponse.name.length > 0 ? entryResponse.name : '/';
@@ -44,7 +60,7 @@ async function getRootFolder(): Promise<Entry> {
 
 async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
   const result: ODataValueContextOfIListOfEntry = await _RepositoryApiClient.entriesClient.getEntryListing({
-    repoId,
+    repoId: repositoryId,
     entryId: folderEntryId,
     orderby: 'name',
     groupByEntryType: true,
@@ -59,5 +75,10 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
 
 function createRepoAPIClient(): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey);
+  return repositoryApiClient;
+}
+
+function createSelfHostedRepoClient(): IRepositoryApiClient {
+  const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username,password,baseUrl);
   return repositoryApiClient;
 }

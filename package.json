@@ -14,7 +14,7 @@
     "dependencies": {
         "@laserfiche/lf-api-client-core": "^1.1.2",
         "@laserfiche/lf-js-utils": "4.0.4",
-        "@laserfiche/lf-repository-api-client": "^1.0.15",
+        "@laserfiche/lf-repository-api-client": "^1.1.0",
         "@types/node": "^18.11.9",
         "dotenv": "^16.0.3",
         "isomorphic-fetch": "^3.0.0"
