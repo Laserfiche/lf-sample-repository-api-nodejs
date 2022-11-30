@@ -14,8 +14,9 @@ import {
   password,
   baseUrl,
 } from './ServiceConfig.js';
+import { authorizationTypeEnum as authType } from './AuthorizationType.js';
 import 'isomorphic-fetch';
-import { authorizationTypeEnum as authType} from './AuthorizationType.js';
+
 
 //Create a Laserfiche Repository API Client
 let _RepositoryApiClient: IRepositoryApiClient;
@@ -30,7 +31,9 @@ async function main(): Promise<void> {
     } else if (authorizationType === authType.APIServerUsernamePassword) {
       _RepositoryApiClient = createSelfHostedRepoClient();
     } else {
-      console.error("Invalid value for 'AUTHORIZATION_TYPE'. It can only be 'CloudAccessKey' or 'APIServerUsernamePassword'.");
+      console.error(
+        "Invalid value for 'AUTHORIZATION_TYPE'. It can only be 'CloudAccessKey' or 'APIServerUsernamePassword'."
+      );
     }
     await getRepositoryName(); //Print repository name
     await getRootFolder(); //Print root folder name
@@ -79,6 +82,6 @@ function createRepoAPIClient(): IRepositoryApiClient {
 }
 
 function createSelfHostedRepoClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username,password,baseUrl);
+  const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username, password, baseUrl);
   return repositoryApiClient;
 }
