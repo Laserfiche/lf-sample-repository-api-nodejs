@@ -11,7 +11,7 @@ let baseUrl: string;
 if (!authorizationType) {
   throw new Error(`Unable to load AUTHORIZATION_TYPE from .env`);
 }
-var repositoryId: string = process.env.REPOSITORY_ID ?? '';
+const repositoryId: string = process.env.REPOSITORY_ID ?? '';
 if (authorizationType === authType.CloudAccessKey) {
   servicePrincipalKey = process.env.SERVICE_PRINCIPAL_KEY ?? '';
   accessKeyBase64 = process.env.ACCESS_KEY ?? '';
