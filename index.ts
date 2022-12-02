@@ -26,13 +26,9 @@ await main();
 async function main(): Promise<void> {
   try {
     if (authorizationType === authType.CloudAccessKey) {
-      _RepositoryApiClient = createCloudRepoApiClient();
-    } else if (authorizationType === authType.APIServerUsernamePassword) {
-      _RepositoryApiClient = createSelfHostedRepoApiClient();
+      _RepositoryApiClient = createCloudRepositoryApiClient();
     } else {
-      console.error(
-        "Invalid value for 'AUTHORIZATION_TYPE'. It can only be 'CloudAccessKey' or 'APIServerUsernamePassword'."
-      );
+      _RepositoryApiClient = createSelfHostedRepositoryApiClient();
     }
     await getRepositoryName(); //Print repository name
     await getRootFolder(); //Print root folder name
@@ -75,12 +71,12 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
   return children;
 }
 
-function createCloudRepoApiClient(): IRepositoryApiClient {
+function createCloudRepositoryApiClient(): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey);
   return repositoryApiClient;
 }
 
-function createSelfHostedRepoApiClient(): IRepositoryApiClient {
+function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username, password, baseUrl);
   return repositoryApiClient;
 }
