@@ -7,9 +7,10 @@ Sample node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 
 ### Software Prerequisites
 
-- Node 14 LTS
+- Node 16 LTS
 - TypeScript
 - CA, EU, or US Cloud Web Client account
+- Proper fetch client
 
 ### 1. Create a Service Principal
 
@@ -58,9 +59,10 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 
 ### Software Prerequisites
 
-- Node 14 LTS
+- Node 16 LTS
 - TypeScript
 - Set up Self-Hosted API Server 1.0+
+- Proper fetch client
 
 ### 1. Clone this repo on your local machine
 
