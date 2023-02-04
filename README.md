@@ -55,6 +55,9 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 - Note: The .env file is used in local development environment to set operating system environment variables. DO NOT
   check-in the .env file in Git
 
+### 5. (optional) Specify scope(s)
+- You can also specify which scope(s) you'd like for the authorization request using the scope variable in index.ts. Scopes are case-sensitive and space-delimited (i.e. repository.Read). Scopes are optional when using v1 APIs but mandatory in v2. 
+
 ## Self-Hosted Prerequisites
 
 ### Software Prerequisites

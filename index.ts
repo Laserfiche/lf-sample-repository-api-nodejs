@@ -21,6 +21,8 @@ import 'isomorphic-fetch';
 let _RepositoryApiClient: IRepositoryApiClient;
 const rootFolderEntryId = 1;
 
+const scope = ""; // add what scopes you would like in the authorization request, i.e. repository.Read, repository.ReadWrite
+
 await main();
 
 async function main(): Promise<void> {
@@ -72,7 +74,7 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
 }
 
 function createCloudRepositoryApiClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey);
+  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
   return repositoryApiClient;
 }
 
