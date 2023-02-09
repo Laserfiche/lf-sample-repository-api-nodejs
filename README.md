@@ -24,6 +24,8 @@ Sample node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 - Add access rights to the repository and click the 'Create' button
 - View the created service principal and click on the 'Create Service Principal Key(s)' button
 - Save the Service Principal Key for later use
+- Select required scope(s) needed to read the repository in the 'Authentication' tab ("repository.Read"). Scopes are case-sensitive and space-delimited. 
+
 
 ### 2. Create an OAuth Service App
 
@@ -54,9 +56,6 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 ```
 - Note: The .env file is used in local development environment to set operating system environment variables. DO NOT
   check-in the .env file in Git
-
-### 5. (optional) Specify scope(s)
-- You can also specify which scope(s) you'd like for the authorization request using the scope variable in index.ts. Scopes are case-sensitive and space-delimited (i.e. repository.Read). Scopes are optional when using v1 APIs but mandatory in v2. This sample app requires a "repository.Read" scope.
 
 ## Self-Hosted Prerequisites
 

@@ -21,7 +21,7 @@ import 'isomorphic-fetch';
 let _RepositoryApiClient: IRepositoryApiClient;
 const rootFolderEntryId = 1;
 
-const scope = "repository.Read"; // add what scopes you would like in the authorization request, i.e. repository.Read, repository.ReadWrite
+const scope = "repository.Read"; // Scope(s) requested by the app
 
 await main();
 
