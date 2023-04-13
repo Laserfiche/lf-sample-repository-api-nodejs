@@ -1,6 +1,6 @@
 # lf-sample-repository-api-nodejs
 
-Sample node service app that connects to a Laserfiche Cloud or Self-Hosted Repository.
+Sample Node service app that connects to a Laserfiche Cloud or Self-Hosted Repository.
 [Sample Code](./index.ts)
 
 ## Cloud Prerequisites
@@ -19,7 +19,7 @@ Sample node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
   - [CA Cloud](https://app.laserfiche.ca/laserfiche)
   - [EU Cloud](https://app.eu.laserfiche.com/laserfiche)
   - [US Cloud](https://app.laserfiche.com/laserfiche)
-  
+
 - Using the app picker, go to the 'Account' page
 - Click on the 'Service Principals' tab
 - Click on the 'Add Service Principal' button to create an account to be used to run this sample service
