@@ -36,7 +36,7 @@ let tempSampleProjectFolderId = 0;
 let tempEntryFieldId = 0;
 let tempEdocEntryId = 0;
 const rootFolderEntryId = 1;
-const sampleProjectEdocName: string = 'JS Sample Project GetDocumentContent';
+const sampleProjectEdocName = 'JS Sample Project GetDocumentContent';
 
 await main();
 
@@ -173,7 +173,7 @@ async function setEntryFields(): Promise<void> {
   const name = new FieldToUpdate();
   name.values = [value];
   const requestBody = { [field.name]: name };
-  var entry: Entry = await CreateEntry(_RepositoryApiClient, 'JS Sample Project SetFields');
+  const entry: Entry = await CreateEntry(_RepositoryApiClient, 'JS Sample Project SetFields');
   const num = Number(entry.id);
   tempEntryFieldId = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
@@ -207,13 +207,13 @@ async function getEntryContentType(): Promise<HttpResponseHead<void>> {
 
 async function searchForImportedDocument(sampleProjectFileName: string): Promise<void> {
   const searchRequest: SimpleSearchRequest = new SimpleSearchRequest();
-    searchRequest.searchCommand = `({LF:Basic ~= \"${sampleProjectFileName}\", option=\"DFANLT\"})`;
+    searchRequest.searchCommand = `({LF:Basic ~= "${sampleProjectFileName}", option="DFANLT"})`;
     console.log(`\nSearching for imported document...`);
     const simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
       repoId: repositoryId,
       request: searchRequest,
     });
-    console.log(`Search Results`);
+    console.log(`\nSearch Results`);
     const searchResults: Entry[] = simpleSearchResponse.value ?? [];
     for (let i = 0; i < searchResults.length; i++) {
       const child: Entry = searchResults[i];
@@ -244,12 +244,12 @@ async function CreateEntry(
   client: IRepositoryApiClient,
   entryName: string | undefined,
   parentEntryId: number = tempSampleProjectFolderId,
-  autoRename: boolean = true
+  autoRename = true
 ): Promise<Entry> {
-  let request = new PostEntryChildrenRequest();
+  const request = new PostEntryChildrenRequest();
   request.entryType = PostEntryChildrenEntryType.Folder;
   request.name = entryName;
-  let newEntry = await client.entriesClient.createOrCopyEntry({
+  const newEntry = await client.entriesClient.createOrCopyEntry({
     repoId: repositoryId,
     entryId: parentEntryId,
     request,
