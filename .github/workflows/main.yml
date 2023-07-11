@@ -29,9 +29,6 @@ jobs:
 
       - name: Npm i
         run: npm i
-      
-      - name: Npm install form data
-        run: npm install form-data
 
       - name: Npm run lint
         run: npm run lint
