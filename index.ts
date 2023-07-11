@@ -32,9 +32,9 @@ import 'isomorphic-fetch';
 import { isBrowser } from '@laserfiche/lf-js-utils/dist/utils/core-utils.js';
 
 let _RepositoryApiClient: IRepositoryApiClient;
-let tempSampleProjectFolderId: number = 0;
-let tempEntryFieldId: number = 0;
-let tempEdocEntryId: number = 0;
+let tempSampleProjectFolderId = 0;
+let tempEntryFieldId = 0;
+let tempEdocEntryId = 0;
 const rootFolderEntryId = 1;
 const sampleProjectEdocName: string = 'JS Sample Project GetDocumentContent';
 
@@ -98,7 +98,7 @@ async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
 }
 
 async function createFolder(): Promise<Entry> {
-  const newEntryName: string = 'JS sample project folder';
+  const newEntryName = 'JS sample project folder';
   const request: PostEntryChildrenRequest = new PostEntryChildrenRequest();
   request.entryType = PostEntryChildrenEntryType.Folder;
   request.name = newEntryName;
@@ -138,23 +138,19 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
     electronicDocument: edoc,
   };
   console.log(`\nImporting a document into the sample project folder...`);
-  try {
-    let response = await _RepositoryApiClient.entriesClient.importDocument({
-      ...importDocumentRequest,
-    });
-    tempEdocEntryId = Number(response.operations?.entryCreate?.entryId);
-  } catch (e: any) {
-    throw e;
-  }
+  const response = await _RepositoryApiClient.entriesClient.importDocument({
+    ...importDocumentRequest,
+  });
+  tempEdocEntryId = Number(response.operations?.entryCreate?.entryId);
 }
 
 async function setEntryFields(): Promise<void> {
   let field = null;
-  let fieldValue = 'JS sample project set entry value';
-  let fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
+  const fieldValue = 'JS sample project set entry value';
+  const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
     repoId: repositoryId,
   });
-  let fieldDefinitions: WFieldInfo[] | undefined = fieldDefinitionsResponse.value;
+  const fieldDefinitions: WFieldInfo[] | undefined = fieldDefinitionsResponse.value;
   if (!fieldDefinitions) {
     throw new Error('fieldDefinitions is undefined');
   }
@@ -171,14 +167,14 @@ async function setEntryFields(): Promise<void> {
   if (!field?.name) {
     throw new Error('field is undefined');
   }
-  let value = new ValueToUpdate();
+  const value = new ValueToUpdate();
   value.value = fieldValue;
   value.position = 1;
-  let name = new FieldToUpdate();
+  const name = new FieldToUpdate();
   name.values = [value];
-  let requestBody = { [field.name]: name };
+  const requestBody = { [field.name]: name };
   var entry: Entry = await CreateEntry(_RepositoryApiClient, 'JS Sample Project SetFields');
-  let num = Number(entry.id);
+  const num = Number(entry.id);
   tempEntryFieldId = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
   await _RepositoryApiClient.entriesClient.assignFieldValues({
@@ -189,9 +185,9 @@ async function setEntryFields(): Promise<void> {
 }
 
 async function getEntryFields(): Promise<ODataValueContextOfIListOfFieldValue> {
-  let entryFieldResponse: ODataValueContextOfIListOfFieldValue =
+  const entryFieldResponse: ODataValueContextOfIListOfFieldValue =
     await _RepositoryApiClient.entriesClient.getFieldValues({ repoId: repositoryId, entryId: tempEntryFieldId });
-  let fieldDefinitions: FieldValue[] | undefined = entryFieldResponse.value;
+  const fieldDefinitions: FieldValue[] | undefined = entryFieldResponse.value;
   if (!fieldDefinitions) {
     throw new Error('fieldDefinitions is undefined');
   }
@@ -203,19 +199,19 @@ async function getEntryFields(): Promise<ODataValueContextOfIListOfFieldValue> {
 }
 
 async function getEntryContentType(): Promise<HttpResponseHead<void>> {
-  let documentContentTypeResponse: HttpResponseHead<void> =
+  const documentContentTypeResponse: HttpResponseHead<void> =
     await _RepositoryApiClient.entriesClient.getDocumentContentType({ repoId: repositoryId, entryId: tempEdocEntryId });
   console.log(`Electronic Document Content: ${JSON.stringify(documentContentTypeResponse.headers)}`);
   return documentContentTypeResponse;
 }
 
 async function searchForImportedDocument(sampleProjectFileName: string): Promise<void> {
-  let request: SimpleSearchRequest = new SimpleSearchRequest();
-    request.searchCommand = `({LF:Basic ~= \"${sampleProjectFileName}\", option=\"DFANLT\"})`;
+  const searchRequest: SimpleSearchRequest = new SimpleSearchRequest();
+    searchRequest.searchCommand = `({LF:Basic ~= \"${sampleProjectFileName}\", option=\"DFANLT\"})`;
     console.log(`\nSearching for imported document...`);
-    let simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
+    const simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
       repoId: repositoryId,
-      request,
+      request: searchRequest,
     });
     console.log(`Search Results`);
     const searchResults: Entry[] = simpleSearchResponse.value ?? [];
@@ -250,10 +246,10 @@ async function CreateEntry(
   parentEntryId: number = tempSampleProjectFolderId,
   autoRename: boolean = true
 ): Promise<Entry> {
-  var request = new PostEntryChildrenRequest();
+  let request = new PostEntryChildrenRequest();
   request.entryType = PostEntryChildrenEntryType.Folder;
   request.name = entryName;
-  var newEntry = await client.entriesClient.createOrCopyEntry({
+  let newEntry = await client.entriesClient.createOrCopyEntry({
     repoId: repositoryId,
     entryId: parentEntryId,
     request,
