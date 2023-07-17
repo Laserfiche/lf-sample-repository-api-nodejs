@@ -115,12 +115,13 @@ async function createFolder(): Promise<Entry> {
 
 async function importDocument(folderEntryId: number, sampleProjectFileName: string): Promise<void> {
   let blob: any;
+  const obj = { hello: "world" };
   if (isBrowser()) {
-    blob = new Blob([''], {
+    blob = new Blob([JSON.stringify(obj, null, 2)], {
       type: 'application/json',
     });
   } else {
-    blob = new NodeBlob([''], {
+    blob = new NodeBlob([JSON.stringify(obj, null, 2)], {
       type: 'application/json',
     });
   }
@@ -202,6 +203,8 @@ async function getEntryContentType(): Promise<HttpResponseHead<void>> {
   const documentContentTypeResponse: HttpResponseHead<void> =
     await _RepositoryApiClient.entriesClient.getDocumentContentType({ repoId: repositoryId, entryId: tempEdocEntryId });
   console.log(`Electronic Document Content: ${JSON.stringify(documentContentTypeResponse.headers)}`);
+  console.log(`Electronic Document Content Type: ${JSON.stringify(documentContentTypeResponse.headers['content-type'])}`);
+  console.log(`Electronic Document Content Length: ${JSON.stringify(documentContentTypeResponse.headers['content-length'])}`);
   return documentContentTypeResponse;
 }
 
