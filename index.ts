@@ -34,7 +34,6 @@ import { isBrowser } from '@laserfiche/lf-js-utils/dist/utils/core-utils.js';
 let _RepositoryApiClient: IRepositoryApiClient;
 let tempSampleProjectFolderId = 0;
 let tempEntryFieldId = 0;
-let tempEdocEntryId = 0;
 const rootFolderEntryId = 1;
 const sampleProjectEdocName = 'JS Sample Project GetDocumentContent';
 
@@ -51,12 +50,12 @@ async function main(): Promise<void> {
     await getRootFolder(rootFolderEntryId); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
     await createFolder(); //Creates a sample project folder
-    await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
+    let tempEdocEntryId = await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
     await setEntryFields(); // Set Entry Fields
     await getRootFolder(tempSampleProjectFolderId); //Print sample project folder name
     await getFolderChildren(tempSampleProjectFolderId); //Print sample project folder children
     await getEntryFields(); // Print entry Fields
-    await getEntryContentType(); // Print Edoc Information
+    await getEntryContentType(tempEdocEntryId); // Print Edoc Information
     await searchForImportedDocument(sampleProjectEdocName); //Search for the imported document inside the sample project folder
     await deleteSampleProjectFolder(); // Deletes sample project folder and its contents inside it
   } catch (err) {
@@ -113,7 +112,7 @@ async function createFolder(): Promise<Entry> {
   return result;
 }
 
-async function importDocument(folderEntryId: number, sampleProjectFileName: string): Promise<void> {
+async function importDocument(folderEntryId: number, sampleProjectFileName: string): Promise<number> {
   let blob: any;
   const obj = { hello: "world" };
   if (isBrowser()) {
@@ -142,7 +141,8 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
   const response = await _RepositoryApiClient.entriesClient.importDocument({
     ...importDocumentRequest,
   });
-  tempEdocEntryId = Number(response.operations?.entryCreate?.entryId);
+  let edocEntryId = response.operations?.entryCreate?.entryId ?? -1;
+  return edocEntryId;
 }
 
 async function setEntryFields(): Promise<void> {
@@ -199,7 +199,7 @@ async function getEntryFields(): Promise<ODataValueContextOfIListOfFieldValue> {
   return entryFieldResponse;
 }
 
-async function getEntryContentType(): Promise<HttpResponseHead<void>> {
+async function getEntryContentType(tempEdocEntryId: number): Promise<HttpResponseHead<void>> {
   const documentContentTypeResponse: HttpResponseHead<void> =
     await _RepositoryApiClient.entriesClient.getDocumentContentType({ repoId: repositoryId, entryId: tempEdocEntryId });
   console.log(`Electronic Document Content: ${JSON.stringify(documentContentTypeResponse.headers)}`);
