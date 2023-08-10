@@ -50,7 +50,7 @@ async function main(): Promise<void> {
     await getRootFolder(rootFolderEntryId); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
     await createFolder(); //Creates a sample project folder
-    let tempEdocEntryId = await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
+    const tempEdocEntryId = await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
     await setEntryFields(); // Set Entry Fields
     await getRootFolder(tempSampleProjectFolderId); //Print sample project folder name
     await getFolderChildren(tempSampleProjectFolderId); //Print sample project folder children
@@ -141,7 +141,7 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
   const response = await _RepositoryApiClient.entriesClient.importDocument({
     ...importDocumentRequest,
   });
-  let edocEntryId = response.operations?.entryCreate?.entryId ?? -1;
+  const edocEntryId = response.operations?.entryCreate?.entryId ?? -1;
   return edocEntryId;
 }
 
