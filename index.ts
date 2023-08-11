@@ -41,7 +41,7 @@ await main();
 
 async function main(): Promise<void> {
   try {
-    const scope : string = "repository.Read,repository.Write";
+    const scope = "repository.Read,repository.Write";
     if (authorizationType === authType.CloudAccessKey) {
       _RepositoryApiClient = createCloudRepositoryApiClient(scope);
     } else {
