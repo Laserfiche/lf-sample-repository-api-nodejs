@@ -41,8 +41,9 @@ await main();
 
 async function main(): Promise<void> {
   try {
+    const scope : string = "repository.Read,repository.Write";
     if (authorizationType === authType.CloudAccessKey) {
-      _RepositoryApiClient = createCloudRepositoryApiClient();
+      _RepositoryApiClient = createCloudRepositoryApiClient(scope);
     } else {
       _RepositoryApiClient = createSelfHostedRepositoryApiClient();
     }
@@ -233,8 +234,8 @@ async function deleteSampleProjectFolder(): Promise<void> {
   console.log(`\nDeleted all sample project entries\n`);
 }
 
-function createCloudRepositoryApiClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey);
+function createCloudRepositoryApiClient(scope:string): IRepositoryApiClient {
+  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
   return repositoryApiClient;
 }
 
