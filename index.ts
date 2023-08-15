@@ -41,7 +41,7 @@ await main();
 
 async function main(): Promise<void> {
   try {
-    const scope = "repository.Read,repository.Write";
+    const scope = 'repository.Read,repository.Write';
     if (authorizationType === authType.CloudAccessKey) {
       _RepositoryApiClient = createCloudRepositoryApiClient(scope);
     } else {
@@ -50,9 +50,9 @@ async function main(): Promise<void> {
     await getRepositoryName(); //Print repository name
     await getRootFolder(rootFolderEntryId); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
-    await createFolder(); //Creates a sample project folder
+    const createFolderEntry = await createFolder(); //Creates a sample project folder
     const tempEdocEntryId = await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
-    await setEntryFields(); // Set Entry Fields
+    await setEntryFields(createFolderEntry.id); // Set Entry Fields
     await getRootFolder(tempSampleProjectFolderId); //Print sample project folder name
     await getFolderChildren(tempSampleProjectFolderId); //Print sample project folder children
     await getEntryFields(); // Print entry Fields
@@ -115,7 +115,7 @@ async function createFolder(): Promise<Entry> {
 
 async function importDocument(folderEntryId: number, sampleProjectFileName: string): Promise<number> {
   let blob: any;
-  const obj = { hello: "world" };
+  const obj = { hello: 'world' };
   if (isBrowser()) {
     blob = new Blob([JSON.stringify(obj, null, 2)], {
       type: 'application/json',
@@ -146,7 +146,7 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
   return edocEntryId;
 }
 
-async function setEntryFields(): Promise<void> {
+async function setEntryFields(sampleProjectFolderEntryId: number | undefined): Promise<void> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
   const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
@@ -175,7 +175,11 @@ async function setEntryFields(): Promise<void> {
   const name = new FieldToUpdate();
   name.values = [value];
   const requestBody = { [field.name]: name };
-  const entry: Entry = await CreateEntry(_RepositoryApiClient, 'JS Sample Project SetFields');
+  const entry: Entry = await CreateEntry(
+    _RepositoryApiClient,
+    'JS Sample Project SetFields',
+    sampleProjectFolderEntryId
+  );
   const num = Number(entry.id);
   tempEntryFieldId = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
@@ -204,25 +208,29 @@ async function getEntryContentType(tempEdocEntryId: number): Promise<HttpRespons
   const documentContentTypeResponse: HttpResponseHead<void> =
     await _RepositoryApiClient.entriesClient.getDocumentContentType({ repoId: repositoryId, entryId: tempEdocEntryId });
   console.log(`Electronic Document Content: ${JSON.stringify(documentContentTypeResponse.headers)}`);
-  console.log(`Electronic Document Content Type: ${JSON.stringify(documentContentTypeResponse.headers['content-type'])}`);
-  console.log(`Electronic Document Content Length: ${JSON.stringify(documentContentTypeResponse.headers['content-length'])}`);
+  console.log(
+    `Electronic Document Content Type: ${JSON.stringify(documentContentTypeResponse.headers['content-type'])}`
+  );
+  console.log(
+    `Electronic Document Content Length: ${JSON.stringify(documentContentTypeResponse.headers['content-length'])}`
+  );
   return documentContentTypeResponse;
 }
 
 async function searchForImportedDocument(sampleProjectFileName: string): Promise<void> {
   const searchRequest: SimpleSearchRequest = new SimpleSearchRequest();
-    searchRequest.searchCommand = `({LF:Basic ~= "${sampleProjectFileName}", option="DFANLT"})`;
-    console.log(`\nSearching for imported document...`);
-    const simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
-      repoId: repositoryId,
-      request: searchRequest,
-    });
-    console.log(`\nSearch Results`);
-    const searchResults: Entry[] = simpleSearchResponse.value ?? [];
-    for (let i = 0; i < searchResults.length; i++) {
-      const child: Entry = searchResults[i];
-      console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
-    }
+  searchRequest.searchCommand = `({LF:Basic ~= "${sampleProjectFileName}", option="DFANLT"})`;
+  console.log(`\nSearching for imported document...`);
+  const simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
+    repoId: repositoryId,
+    request: searchRequest,
+  });
+  console.log(`\nSearch Results`);
+  const searchResults: Entry[] = simpleSearchResponse.value ?? [];
+  for (let i = 0; i < searchResults.length; i++) {
+    const child: Entry = searchResults[i];
+    console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
+  }
 }
 
 async function deleteSampleProjectFolder(): Promise<void> {
@@ -234,7 +242,7 @@ async function deleteSampleProjectFolder(): Promise<void> {
   console.log(`\nDeleted all sample project entries\n`);
 }
 
-function createCloudRepositoryApiClient(scope:string): IRepositoryApiClient {
+function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
   return repositoryApiClient;
 }
