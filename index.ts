@@ -143,7 +143,7 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
   return edocEntryId;
 }
 
-async function setEntryFields(sampleProjectFolderEntryId: number | undefined): Promise<Entry> {
+async function setEntryFields(entryId: number | undefined): Promise<Entry> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
   const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
@@ -175,7 +175,7 @@ async function setEntryFields(sampleProjectFolderEntryId: number | undefined): P
   const entry: Entry = await CreateEntry(
     _RepositoryApiClient,
     'JS Sample Project SetFields',
-    sampleProjectFolderEntryId
+    entryId
   );
   const num = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
