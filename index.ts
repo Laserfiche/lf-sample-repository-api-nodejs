@@ -32,8 +32,6 @@ import 'isomorphic-fetch';
 import { isBrowser } from '@laserfiche/lf-js-utils/dist/utils/core-utils.js';
 
 let _RepositoryApiClient: IRepositoryApiClient;
-let tempSampleProjectFolderId = 0;
-let tempEntryFieldId = 0;
 const rootFolderEntryId = 1;
 const sampleProjectEdocName = 'JS Sample Project GetDocumentContent';
 
@@ -51,14 +49,14 @@ async function main(): Promise<void> {
     await getRootFolder(rootFolderEntryId); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
     const createFolderEntry = await createFolder(); //Creates a sample project folder
-    const tempEdocEntryId = await importDocument(tempSampleProjectFolderId, sampleProjectEdocName); //Imports a document inside the sample project folder
-    await setEntryFields(createFolderEntry.id); // Set Entry Fields
-    await getRootFolder(tempSampleProjectFolderId); //Print sample project folder name
-    await getFolderChildren(tempSampleProjectFolderId); //Print sample project folder children
-    await getEntryFields(); // Print entry Fields
+    const tempEdocEntryId = await importDocument(createFolderEntry.id, sampleProjectEdocName); //Imports a document inside the sample project folder
+    const setFieldsEntry = await setEntryFields(createFolderEntry.id); // Set Entry Fields
+    await getRootFolder(createFolderEntry.id); //Print sample project folder name
+    await getFolderChildren(createFolderEntry.id); //Print sample project folder children
+    await getEntryFields(setFieldsEntry.id); // Print entry Fields
     await getEntryContentType(tempEdocEntryId); // Print Edoc Information
     await searchForImportedDocument(sampleProjectEdocName); //Search for the imported document inside the sample project folder
-    await deleteSampleProjectFolder(); // Deletes sample project folder and its contents inside it
+    await deleteSampleProjectFolder(createFolderEntry.id); // Deletes sample project folder and its contents inside it
   } catch (err) {
     console.error(err);
   }
@@ -72,20 +70,20 @@ async function getRepositoryName(): Promise<string> {
   return repoName;
 }
 
-async function getRootFolder(folderEntryId: number): Promise<Entry> {
+async function getRootFolder(folderEntryId: number | undefined): Promise<Entry> {
   const entryResponse: Entry = await _RepositoryApiClient.entriesClient.getEntry({
     repoId: repositoryId,
-    entryId: folderEntryId,
+    entryId: folderEntryId ?? 1,
   });
   const rootFolderName = entryResponse.name && entryResponse.name.length > 0 ? entryResponse.name : '/';
   console.log(`Root Folder Name: '${rootFolderName}'`);
   return entryResponse;
 }
 
-async function getFolderChildren(folderEntryId: number): Promise<Entry[]> {
+async function getFolderChildren(folderEntryId: number| undefined): Promise<Entry[]> {
   const result: ODataValueContextOfIListOfEntry = await _RepositoryApiClient.entriesClient.getEntryListing({
     repoId: repositoryId,
-    entryId: folderEntryId,
+    entryId: folderEntryId ?? 1,
     orderby: 'name',
     groupByEntryType: true,
   });
@@ -109,11 +107,10 @@ async function createFolder(): Promise<Entry> {
     request,
     autoRename: true,
   });
-  tempSampleProjectFolderId = Number(result.id);
   return result;
 }
 
-async function importDocument(folderEntryId: number, sampleProjectFileName: string): Promise<number> {
+async function importDocument(folderEntryId: number | undefined, sampleProjectFileName: string): Promise<number> {
   let blob: any;
   const obj = { hello: 'world' };
   if (isBrowser()) {
@@ -132,7 +129,7 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
   };
   const importDocumentRequest = {
     repoId: repositoryId,
-    parentEntryId: folderEntryId,
+    parentEntryId: folderEntryId ?? 1,
     fileName: sampleProjectFileName,
     autoRename: true,
     request: request,
@@ -146,7 +143,7 @@ async function importDocument(folderEntryId: number, sampleProjectFileName: stri
   return edocEntryId;
 }
 
-async function setEntryFields(sampleProjectFolderEntryId: number | undefined): Promise<void> {
+async function setEntryFields(sampleProjectFolderEntryId: number | undefined): Promise<Entry> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
   const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
@@ -181,18 +178,18 @@ async function setEntryFields(sampleProjectFolderEntryId: number | undefined): P
     sampleProjectFolderEntryId
   );
   const num = Number(entry.id);
-  tempEntryFieldId = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
   await _RepositoryApiClient.entriesClient.assignFieldValues({
     repoId: repositoryId,
     entryId: num,
     fieldsToUpdate: requestBody,
   });
+  return entry;
 }
 
-async function getEntryFields(): Promise<ODataValueContextOfIListOfFieldValue> {
+async function getEntryFields(setFieldsEntryId: number | undefined): Promise<ODataValueContextOfIListOfFieldValue> {
   const entryFieldResponse: ODataValueContextOfIListOfFieldValue =
-    await _RepositoryApiClient.entriesClient.getFieldValues({ repoId: repositoryId, entryId: tempEntryFieldId });
+    await _RepositoryApiClient.entriesClient.getFieldValues({ repoId: repositoryId, entryId: setFieldsEntryId ?? 1 });
   const fieldDefinitions: FieldValue[] | undefined = entryFieldResponse.value;
   if (!fieldDefinitions) {
     throw new Error('fieldDefinitions is undefined');
@@ -233,11 +230,11 @@ async function searchForImportedDocument(sampleProjectFileName: string): Promise
   }
 }
 
-async function deleteSampleProjectFolder(): Promise<void> {
+async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | undefined): Promise<void> {
   console.log(`\nDeleting all sample project entries...`);
   await _RepositoryApiClient.entriesClient.deleteEntryInfo({
     repoId: repositoryId,
-    entryId: tempSampleProjectFolderId,
+    entryId: sampleProjectFolderEntryId ?? 1,
   });
   console.log(`\nDeleted all sample project entries\n`);
 }
@@ -255,7 +252,7 @@ function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
 async function CreateEntry(
   client: IRepositoryApiClient,
   entryName: string | undefined,
-  parentEntryId: number = tempSampleProjectFolderId,
+  parentEntryId: number | undefined,
   autoRename = true
 ): Promise<Entry> {
   const request = new PostEntryChildrenRequest();
@@ -263,7 +260,7 @@ async function CreateEntry(
   request.name = entryName;
   const newEntry = await client.entriesClient.createOrCopyEntry({
     repoId: repositoryId,
-    entryId: parentEntryId,
+    entryId: parentEntryId ?? 1,
     request,
     autoRename,
   });
