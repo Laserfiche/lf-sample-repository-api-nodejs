@@ -46,12 +46,12 @@ async function main(): Promise<void> {
       _RepositoryApiClient = createSelfHostedRepositoryApiClient();
     }
     await getRepositoryName(); //Print repository name
-    await getRootFolder(rootFolderEntryId); //Print root folder name
+    await getFolder(rootFolderEntryId); //Print root folder name
     await getFolderChildren(rootFolderEntryId); //Print root folder children
     const createFolderEntry = await createFolder(); //Creates a sample project folder
     const tempEdocEntryId = await importDocument(createFolderEntry.id, sampleProjectEdocName); //Imports a document inside the sample project folder
     const setFieldsEntry = await setEntryFields(createFolderEntry.id); // Set Entry Fields
-    await getRootFolder(createFolderEntry.id); //Print sample project folder name
+    await getFolder(createFolderEntry.id); //Print sample project folder name
     await getFolderChildren(createFolderEntry.id); //Print sample project folder children
     await getEntryFields(setFieldsEntry.id); // Print entry Fields
     await getEntryContentType(tempEdocEntryId); // Print Edoc Information
@@ -70,7 +70,7 @@ async function getRepositoryName(): Promise<string> {
   return repoName;
 }
 
-async function getRootFolder(folderEntryId: number | undefined): Promise<Entry> {
+async function getFolder(folderEntryId: number | undefined): Promise<Entry> {
   const entryResponse: Entry = await _RepositoryApiClient.entriesClient.getEntry({
     repoId: repositoryId,
     entryId: folderEntryId ?? 1,
