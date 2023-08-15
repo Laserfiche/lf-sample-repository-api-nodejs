@@ -50,10 +50,10 @@ async function main(): Promise<void> {
     await getFolderChildren(rootFolderEntryId); //Print root folder children
     const createFolderEntry = await createFolder(); //Creates a sample project folder
     const tempEdocEntryId = await importDocument(createFolderEntry.id, sampleProjectEdocName); //Imports a document inside the sample project folder
-    const setFieldsEntry = await setEntryFields(createFolderEntry.id); // Set Entry Fields
+    await setEntryFields(createFolderEntry.id); // Set Entry Fields
     await getFolder(createFolderEntry.id); //Print sample project folder name
     await getFolderChildren(createFolderEntry.id); //Print sample project folder children
-    await getEntryFields(setFieldsEntry.id); // Print entry Fields
+    await getEntryFields(createFolderEntry.id); // Print entry Fields
     await getEntryContentType(tempEdocEntryId); // Print Edoc Information
     await searchForImportedDocument(sampleProjectEdocName); //Search for the imported document inside the sample project folder
     await deleteSampleProjectFolder(createFolderEntry.id); // Deletes sample project folder and its contents inside it
@@ -143,7 +143,7 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
   return edocEntryId;
 }
 
-async function setEntryFields(entryId: number | undefined): Promise<Entry> {
+async function setEntryFields(entryId: number | undefined): Promise<void> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
   const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
@@ -172,19 +172,12 @@ async function setEntryFields(entryId: number | undefined): Promise<Entry> {
   const name = new FieldToUpdate();
   name.values = [value];
   const requestBody = { [field.name]: name };
-  const entry: Entry = await CreateEntry(
-    _RepositoryApiClient,
-    'JS Sample Project SetFields',
-    entryId
-  );
-  const num = Number(entry.id);
   console.log(`\nSetting Entry Fields in the sample project folder...\n`);
   await _RepositoryApiClient.entriesClient.assignFieldValues({
     repoId: repositoryId,
-    entryId: num,
+    entryId: entryId ?? 1,
     fieldsToUpdate: requestBody,
   });
-  return entry;
 }
 
 async function getEntryFields(setFieldsEntryId: number | undefined): Promise<ODataValueContextOfIListOfFieldValue> {
