@@ -47,6 +47,7 @@ const largeDocumentFilePath = 'testFiles/sample.pdf';
 await main();
 
 async function main(): Promise<void> {
+  let sampleFolderEntry: Entry | undefined;
   try {
     const scope = 'repository.Read repository.Write';
     if (authorizationType === authType.CloudAccessKey) {
@@ -57,15 +58,19 @@ async function main(): Promise<void> {
     await printAllRepositoryNames();
     await printFolderName(rootFolderEntryId);
     await printFolderChildrenInformation(rootFolderEntryId);
-    const sampleFolderEntry = await createSampleProjectFolder();
+    sampleFolderEntry = await createSampleProjectFolder();
     const importedEntryId = await importDocument(sampleFolderEntry.id, sampleProjectDocumentName);
     await setEntryFields(importedEntryId);
     await printEntryFields(importedEntryId);
     await searchForImportedDocument(sampleProjectDocumentName);
     await importLargeDocument(sampleFolderEntry.id, largeDocumentFilePath);
-    await deleteSampleProjectFolder(sampleFolderEntry.id);
+
   } catch (err) {
     console.error(err);
+  } finally {
+    if (sampleFolderEntry) {
+      await deleteSampleProjectFolder(sampleFolderEntry.id);
+    }
   }
 }
 
