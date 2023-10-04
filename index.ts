@@ -374,7 +374,7 @@ async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
   const eTags = new Array<string>(urls.length);
   let writtenParts = 0;
   for (let i = 0; i < urls.length; i++) {
-    let url = urls[i];
+    const url = urls[i];
     const [partData, endOfFileReached] = await readOnePart(source, partSizeInMB);
 
     if (endOfFileReached) {
