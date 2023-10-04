@@ -7,7 +7,7 @@ Sample Node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 
 ### Software Prerequisites
 
-- Node 16 LTS
+- Node 18 LTS
 - TypeScript
 - CA, EU, or US Cloud Web Client account
 - Proper fetch client
@@ -61,32 +61,7 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 
 ## Self-Hosted Prerequisites
 
-### Software Prerequisites
-
-- Node 16 LTS
-- TypeScript
-- Set up Self-Hosted API Server 1.0+
-- Proper fetch client
-
-### 1. Clone this repo on your local machine
-
-### 2. Create a .env file
-
-- In the root directory of this project, create a .env file containing the following lines:
-
-```
-AUTHORIZATION_TYPE="API_SERVER_USERNAME_PASSWORD" 
-
-REPOSITORY_ID="<Repository Name>"
-
-APISERVER_USERNAME="<Username>"
-
-APISERVER_PASSWORD="<Password>"
-
-APISERVER_REPOSITORY_API_BASE_URL="<API Server Base Url (ex: https://example.com/LFRepositoryAPI)>"
-```
-- Note: The .env file is used in local development environment to set operating system environment variables. DO NOT
-  check-in the .env file in Git
+See [this page](https://github.com/Laserfiche/lf-sample-repository-api-nodejs/tree/v1#self-hosted-prerequisites).
 
 ## Build and Run this App
 
