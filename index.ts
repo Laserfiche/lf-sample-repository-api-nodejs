@@ -2,21 +2,28 @@ import {
   IRepositoryApiClient,
   RepositoryApiClient,
   Entry,
-  ODataValueContextOfIListOfEntry,
-  RepositoryInfo,
-  PostEntryChildrenRequest,
-  PostEntryChildrenEntryType,
-  PostEntryWithEdocMetadataRequest,
+  EntryCollectionResponse,
+  Repository,
+  CreateEntryRequest,
+  CreateEntryRequestEntryType,
   FileParameter,
-  ValueToUpdate,
   FieldToUpdate,
-  WFieldInfo,
-  WFieldType,
-  FieldValue,
-  HttpResponseHead,
-  ODataValueContextOfIListOfFieldValue,
-  SimpleSearchRequest,
-} from '@laserfiche/lf-repository-api-client';
+  FieldDefinition,
+  FieldType,
+  SearchEntryRequest,
+  RepositoryCollectionResponse,
+  ImportEntryRequest,
+  StartTaskResponse,
+  TaskCollectionResponse,
+  SetFieldsRequest,
+  FieldCollectionResponse,
+  Field,
+  CreateMultipartUploadUrlsRequest,
+  ImportEntryRequestPdfOptions,
+  StartImportUploadedPartsRequest,
+  GeneratePagesImageType,
+  TaskStatus
+} from '@laserfiche/lf-repository-api-client-v2';
 import {
   OAuthAccessKey,
   servicePrincipalKey,
@@ -30,84 +37,85 @@ import { Blob as NodeBlob } from 'buffer';
 import { authorizationTypeEnum as authType } from './AuthorizationType.js';
 import 'isomorphic-fetch';
 import { isBrowser } from '@laserfiche/lf-js-utils/dist/utils/core-utils.js';
+import * as fsPromise from 'fs/promises';
 
 let _RepositoryApiClient: IRepositoryApiClient;
 const rootFolderEntryId = 1;
-const sampleProjectEdocName = 'JS Sample Project GetDocumentContent';
+const sampleProjectDocumentName = 'JS Sample Project GetDocumentContent';
+const largeDocumentFilePath = 'testFiles/sample.pdf';
 
 await main();
 
 async function main(): Promise<void> {
   try {
-    const scope = 'repository.Read,repository.Write';
+    const scope = 'repository.Read repository.Write';
     if (authorizationType === authType.CloudAccessKey) {
       _RepositoryApiClient = createCloudRepositoryApiClient(scope);
     } else {
       _RepositoryApiClient = createSelfHostedRepositoryApiClient();
     }
-    await getRepositoryName(); //Print repository name
-    await getFolder(rootFolderEntryId); //Print root folder name
-    await getFolderChildren(rootFolderEntryId); //Print root folder children
-    const createFolderEntry = await createFolder(); //Creates a sample project folder
-    const tempEdocEntryId = await importDocument(createFolderEntry.id, sampleProjectEdocName); //Imports a document inside the sample project folder
-    await setEntryFields(createFolderEntry.id); // Set Entry Fields
-    await getFolder(createFolderEntry.id); //Print sample project folder name
-    await getFolderChildren(createFolderEntry.id); //Print sample project folder children
-    await getEntryFields(createFolderEntry.id); // Print entry Fields
-    await getEntryContentType(tempEdocEntryId); // Print Edoc Information
-    await searchForImportedDocument(sampleProjectEdocName); //Search for the imported document inside the sample project folder
-    await deleteSampleProjectFolder(createFolderEntry.id); // Deletes sample project folder and its contents inside it
+    await printAllRepositoryNames();
+    await printFolderName(rootFolderEntryId);
+    await printFolderChildrenInformation(rootFolderEntryId);
+    const sampleFolderEntry = await createSampleProjectFolder();
+    const importedEntryId = await importDocument(sampleFolderEntry.id, sampleProjectDocumentName);
+    await setEntryFields(importedEntryId);
+    await printEntryFields(importedEntryId);
+    await searchForImportedDocument(sampleProjectDocumentName);
+    await importLargeDocument(sampleFolderEntry.id, largeDocumentFilePath);
+    await deleteSampleProjectFolder(sampleFolderEntry.id);
   } catch (err) {
     console.error(err);
   }
 }
 
-async function getRepositoryName(): Promise<string> {
-  const response: RepositoryInfo[] = await _RepositoryApiClient.repositoriesClient.getRepositoryList({});
-  const repoName = response[0].repoName ?? '';
-  const repoId = response[0].repoId ?? '';
-  console.log(`Repository Name: '${repoName} [${repoId}]'`);
-  return repoName;
+async function printAllRepositoryNames(): Promise<void> {
+  const collectionResponse: RepositoryCollectionResponse = (await _RepositoryApiClient.repositoriesClient.listRepositories({}));
+  const repositories: Repository[] = collectionResponse.value ?? [];
+  repositories.forEach(repository => {
+    const repoName = repository.name ?? '';
+    const repoId = repository.id ?? '';
+    console.log(`Repository Name: '${repoName}' Repository Id: [${repoId}]`);
+  });
 }
 
-async function getFolder(folderEntryId: number | undefined): Promise<Entry> {
-  const entryResponse: Entry = await _RepositoryApiClient.entriesClient.getEntry({
-    repoId: repositoryId,
+async function printFolderName(folderEntryId: number | undefined): Promise<void> {
+  const rootFolderEntry: Entry = await _RepositoryApiClient.entriesClient.getEntry({
+    repositoryId: repositoryId,
     entryId: folderEntryId ?? 1,
   });
-  const rootFolderName = entryResponse.name && entryResponse.name.length > 0 ? entryResponse.name : '/';
+  const rootFolderName = rootFolderEntry.name && rootFolderEntry.name.length > 0 ? rootFolderEntry.name : '/';
   console.log(`Root Folder Name: '${rootFolderName}'`);
-  return entryResponse;
 }
 
-async function getFolderChildren(folderEntryId: number| undefined): Promise<Entry[]> {
-  const result: ODataValueContextOfIListOfEntry = await _RepositoryApiClient.entriesClient.getEntryListing({
-    repoId: repositoryId,
+async function printFolderChildrenInformation(folderEntryId: number| undefined): Promise<void> {
+  const collectionResponse: EntryCollectionResponse = await _RepositoryApiClient.entriesClient.listEntries({
+    repositoryId: repositoryId,
     entryId: folderEntryId ?? 1,
     orderby: 'name',
     groupByEntryType: true,
   });
-  const children: Entry[] = result.value ?? [];
+  const children: Entry[] = collectionResponse.value ?? [];
   for (let i = 0; i < children.length; i++) {
     const child: Entry = children[i];
-    console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
+    console.log(`${i + 1}: Id: ${child.id} Name: '${child.name}' Type: ${child.entryType}`);
   }
-  return children;
 }
 
-async function createFolder(): Promise<Entry> {
+async function createSampleProjectFolder(): Promise<Entry> {
   const newEntryName = 'JS sample project folder';
-  const request: PostEntryChildrenRequest = new PostEntryChildrenRequest();
-  request.entryType = PostEntryChildrenEntryType.Folder;
+  const request: CreateEntryRequest = new CreateEntryRequest();
+  request.entryType = CreateEntryRequestEntryType.Folder;
   request.name = newEntryName;
-  console.log(`\nCreating sample project folder...`);
-  const result = await _RepositoryApiClient.entriesClient.createOrCopyEntry({
-    repoId: repositoryId,
+  request.autoRename = true;
+  console.log(`Creating sample project folder...`);
+  const newEntry = await _RepositoryApiClient.entriesClient.createEntry({
+    repositoryId: repositoryId,
     entryId: rootFolderEntryId,
     request,
-    autoRename: true,
   });
-  return result;
+  console.log(`Done! Entry Id: ${newEntry.id}`);
+  return newEntry;
 }
 
 async function importDocument(folderEntryId: number | undefined, sampleProjectFileName: string): Promise<number> {
@@ -122,40 +130,41 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
       type: 'application/json',
     });
   }
-  const request = new PostEntryWithEdocMetadataRequest();
+  const request = new ImportEntryRequest();
+  request.autoRename = true;
+  request.name = sampleProjectFileName;
   const edoc: FileParameter = {
     fileName: sampleProjectFileName,
     data: blob,
   };
   const importDocumentRequest = {
-    repoId: repositoryId,
-    parentEntryId: folderEntryId ?? 1,
-    fileName: sampleProjectFileName,
-    autoRename: true,
+    repositoryId: repositoryId,
+    entryId: folderEntryId ?? 1,
+    file: edoc,
     request: request,
-    electronicDocument: edoc,
   };
-  console.log(`\nImporting a document into the sample project folder...`);
-  const response = await _RepositoryApiClient.entriesClient.importDocument({
+  console.log(`Importing a document into the sample project folder...`);
+  const importedEntry = await _RepositoryApiClient.entriesClient.importEntry({
     ...importDocumentRequest,
   });
-  const edocEntryId = response.operations?.entryCreate?.entryId ?? -1;
-  return edocEntryId;
+  const importedEntryId = importedEntry.id ?? -1;
+  console.log(`Done! Entry Id: ${importedEntryId}`);
+  return importedEntryId;
 }
 
 async function setEntryFields(entryId: number | undefined): Promise<void> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
-  const fieldDefinitionsResponse = await _RepositoryApiClient.fieldDefinitionsClient.getFieldDefinitions({
-    repoId: repositoryId,
+  var collectionResponse = await _RepositoryApiClient.fieldDefinitionsClient.listFieldDefinitions({
+    repositoryId: repositoryId,
   });
-  const fieldDefinitions: WFieldInfo[] | undefined = fieldDefinitionsResponse.value;
+  const fieldDefinitions: FieldDefinition[] | undefined = collectionResponse.value;
   if (!fieldDefinitions) {
-    throw new Error('fieldDefinitions is undefined');
+    throw new Error('There is no FieldDefinition available.');
   }
   for (let i = 0; i < fieldDefinitions.length; i++) {
     if (
-      fieldDefinitions[i].fieldType == WFieldType.String &&
+      fieldDefinitions[i].fieldType == FieldType.String &&
       (fieldDefinitions[i].constraint == '' || fieldDefinitions[i].constraint == null) &&
       (fieldDefinitions[i].length ?? -1 >= 1)
     ) {
@@ -164,72 +173,74 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
     }
   }
   if (!field?.name) {
-    throw new Error('field is undefined');
+    throw new Error(`The FieldDefinition's name is undefined.`);
   }
-  const value = new ValueToUpdate();
-  value.value = fieldValue;
-  value.position = 1;
-  const name = new FieldToUpdate();
-  name.values = [value];
-  const requestBody = { [field.name]: name };
-  console.log(`\nSetting Entry Fields in the sample project folder...\n`);
-  await _RepositoryApiClient.entriesClient.assignFieldValues({
-    repoId: repositoryId,
+
+  const fieldToUpdate = new FieldToUpdate();
+  fieldToUpdate.name = field.name;
+  fieldToUpdate.values = [fieldValue];
+  const request = new SetFieldsRequest();
+  request.fields = [fieldToUpdate];
+  console.log(`Setting Entry Fields in the sample project folder...`);
+  collectionResponse = await _RepositoryApiClient.entriesClient.setFields({
+    repositoryId: repositoryId,
     entryId: entryId ?? 1,
-    fieldsToUpdate: requestBody,
+    request: request,
   });
-}
-
-async function getEntryFields(setFieldsEntryId: number | undefined): Promise<ODataValueContextOfIListOfFieldValue> {
-  const entryFieldResponse: ODataValueContextOfIListOfFieldValue =
-    await _RepositoryApiClient.entriesClient.getFieldValues({ repoId: repositoryId, entryId: setFieldsEntryId ?? 1 });
-  const fieldDefinitions: FieldValue[] | undefined = entryFieldResponse.value;
-  if (!fieldDefinitions) {
-    throw new Error('fieldDefinitions is undefined');
+  if (collectionResponse.value) {
+    console.log(`Number of fields set on the entry: ${collectionResponse.value.length}`);
   }
-  console.log(`Entry Field Name: ${fieldDefinitions[0].fieldName}`);
-  console.log(`Entry Field Type: ${fieldDefinitions[0].fieldType}`);
-  console.log(`Entry Field ID: ${fieldDefinitions[0].fieldId}`);
-  console.log(`Entry Field Value: ${JSON.stringify(fieldDefinitions[0].values)}`);
-  return entryFieldResponse;
 }
 
-async function getEntryContentType(tempEdocEntryId: number): Promise<HttpResponseHead<void>> {
-  const documentContentTypeResponse: HttpResponseHead<void> =
-    await _RepositoryApiClient.entriesClient.getDocumentContentType({ repoId: repositoryId, entryId: tempEdocEntryId });
-  console.log(`Electronic Document Content: ${JSON.stringify(documentContentTypeResponse.headers)}`);
-  console.log(
-    `Electronic Document Content Type: ${JSON.stringify(documentContentTypeResponse.headers['content-type'])}`
-  );
-  console.log(
-    `Electronic Document Content Length: ${JSON.stringify(documentContentTypeResponse.headers['content-length'])}`
-  );
-  return documentContentTypeResponse;
+async function printEntryFields(entryId: number | undefined): Promise<void> {
+  const collectionResponse: FieldCollectionResponse =
+    await _RepositoryApiClient.entriesClient.listFields({
+      repositoryId: repositoryId, 
+      entryId: entryId ?? 1 });
+  const fields: Field[] | undefined = collectionResponse.value;
+  if (!fields) {
+    throw new Error('There is no fields set on the entry.');
+  }
+  for (let i = 0; i < fields.length; i++) {
+    const field: Field = fields[i];
+    console.log(`${i + 1}: Id: ${field.id} Name: '${field.name}' Type: ${field.fieldType} Value: ${JSON.stringify(field.values)}}`);
+  }
 }
+
 
 async function searchForImportedDocument(sampleProjectFileName: string): Promise<void> {
-  const searchRequest: SimpleSearchRequest = new SimpleSearchRequest();
+  const searchRequest: SearchEntryRequest = new SearchEntryRequest();
   searchRequest.searchCommand = `({LF:Basic ~= "${sampleProjectFileName}", option="DFANLT"})`;
-  console.log(`\nSearching for imported document...`);
-  const simpleSearchResponse = await _RepositoryApiClient.simpleSearchesClient.createSimpleSearchOperation({
-    repoId: repositoryId,
+  console.log(`Searching for imported document...`);
+  const collectionResponse = await _RepositoryApiClient.simpleSearchesClient.searchEntry({
+    repositoryId: repositoryId,
     request: searchRequest,
   });
-  console.log(`\nSearch Results`);
-  const searchResults: Entry[] = simpleSearchResponse.value ?? [];
+  console.log(`Search Results:`);
+  const searchResults: Entry[] = collectionResponse.value ?? [];
   for (let i = 0; i < searchResults.length; i++) {
-    const child: Entry = searchResults[i];
-    console.log(`${i}:[${child.entryType} id:${child.id}] '${child.name}'`);
+    const entry: Entry = searchResults[i];
+    console.log(`${i + 1}: Id: ${entry.id} Name: '${entry.name}' Type: ${entry.entryType}`);
   }
 }
 
 async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | undefined): Promise<void> {
-  console.log(`\nDeleting all sample project entries...`);
-  await _RepositoryApiClient.entriesClient.deleteEntryInfo({
-    repoId: repositoryId,
+  console.log(`Deleting all sample project entries...`);
+  const taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startDeleteEntry({
+    repositoryId: repositoryId,
     entryId: sampleProjectFolderEntryId ?? 1,
   });
-  console.log(`\nDeleted all sample project entries\n`);
+  const taskId: string = taskResponse.taskId ?? '';
+  console.log(`Task Id: ${taskId}`);
+  var taskIds = [taskId]; 
+  const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
+    repositoryId: repositoryId,
+    taskIds: taskIds
+  });
+  if (taskCollectionResopnse.value) {
+    var taskStatus = taskCollectionResopnse.value[0].status;
+    console.log(`Task status: ${taskStatus}`);
+  }
 }
 
 function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
@@ -242,20 +253,166 @@ function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
   return repositoryApiClient;
 }
 
-async function CreateEntry(
-  client: IRepositoryApiClient,
-  entryName: string | undefined,
-  parentEntryId: number | undefined,
-  autoRename = true
-): Promise<Entry> {
-  const request = new PostEntryChildrenRequest();
-  request.entryType = PostEntryChildrenEntryType.Folder;
-  request.name = entryName;
-  const newEntry = await client.entriesClient.createOrCopyEntry({
-    repoId: repositoryId,
-    entryId: parentEntryId ?? 1,
-    request,
-    autoRename,
-  });
-  return newEntry;
+async function importLargeDocument(folderEntryId: number | undefined, filePath: string): Promise<void> {
+  var eTags = new Array<string>();
+  var dataSource = null;
+  try 
+  {
+    const blob = new NodeBlob([""], {
+      type: "application/json",
+    });
+    const file: FileParameter = {
+      fileName: filePath,
+      data: blob
+    }
+    dataSource = await fsPromise.open(file.fileName, 'r');
+    const mimeType = "application/pdf";
+    const numberOfUrlsRequestedInEachCall = 10;
+    var thereAreMoreParts = true;
+    let uploadId = null;
+
+    let iteration = 0;
+    // Iteratively request URLs and write file parts into the URLs.
+    while (thereAreMoreParts) {
+      iteration++;
+      
+      // Step 1: Request a batch of URLs by calling the CreateMultipartUploadUrls API.
+      console.log("Requesting upload URLs...");
+      var request1 = prepareRequestForCreateMultipartUploadUrlsApi(iteration, numberOfUrlsRequestedInEachCall, getFileName(file.fileName), mimeType, uploadId);
+      let response = await _RepositoryApiClient.entriesClient.createMultipartUploadUrls({
+        repositoryId: repositoryId,
+        request: request1
+      });
+
+      if (iteration == 1) {
+        uploadId = response.uploadId;
+      }
+      
+      // Step 2: Split the file and write the parts to current batch of URLs.
+      console.log("Writing file parts to upload URLs...");
+      var eTagsForThisIteration = await writeFileParts(dataSource!, response.urls!);
+      eTags.push.apply(eTags, eTagsForThisIteration);
+      thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
+    }    
+
+    // Step 3: File parts are written, and eTags are ready. Call the ImportUploadedParts API.
+    console.log("Starting the import task...");
+    var pdfOptions = new ImportEntryRequestPdfOptions();
+    pdfOptions.generatePages = true;
+    pdfOptions.generatePagesImageType = GeneratePagesImageType.HighQualityColor;
+    pdfOptions.generateText = true;
+    pdfOptions.keepPdfAfterImport = true;
+    var finalRequest = new StartImportUploadedPartsRequest();
+    finalRequest.uploadId = uploadId ?? '';
+    finalRequest.partETags = eTags;
+    finalRequest.name = getFileName(file.fileName);
+    finalRequest.autoRename = true;
+    finalRequest.pdfOptions = pdfOptions;
+
+    var taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startImportUploadedParts({
+      repositoryId: repositoryId,
+      entryId: folderEntryId ?? 1,
+      request: finalRequest
+    });
+    const taskId: string = taskResponse.taskId ?? '';
+    console.log(`Task Id: ${taskId}`);
+    var taskIds = [taskId];
+    var inProgress = true;
+    var attempt = 0;
+    var maxAttempt = 5;
+    while (inProgress && attempt < maxAttempt) {
+      attempt++;
+      console.log("Checking status of the import task...");
+      const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
+        repositoryId: repositoryId,
+        taskIds: taskIds
+      });
+      if (taskCollectionResopnse.value) {
+        var taskProgress = taskCollectionResopnse.value[0];
+        var taskStatus = taskProgress.status;
+        inProgress = taskStatus == TaskStatus.InProgress;
+        console.log(`Task status: ${taskStatus}`);
+        if (taskStatus == TaskStatus.Completed) {
+          console.log(`Entry Id: ${taskProgress.result?.entryId}`);
+        } else if (taskStatus == TaskStatus.Failed){
+          console.log(`Errors: ${taskProgress.errors}`);
+        } 
+      }
+    }
+  } finally {
+    if (dataSource) {
+      dataSource.close();
+    }
+  }
+}
+
+function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, numberOfUrlsRequestedInEachCall: number, fileName: string, mimeType: string, uploadId? : string | null): CreateMultipartUploadUrlsRequest {
+  var parameters = (iteration == 1) ? {
+    startingPartNumber: 1,
+    numberOfParts: numberOfUrlsRequestedInEachCall,
+    fileName: fileName,
+    mimeType: mimeType
+  } : {
+    uploadId: uploadId,
+    startingPartNumber: (iteration - 1) * numberOfUrlsRequestedInEachCall + 1,
+    numberOfParts: numberOfUrlsRequestedInEachCall,
+  };
+  return CreateMultipartUploadUrlsRequest.fromJS(parameters);
+}
+
+function getFileName(filePath: string): string {
+  let fileName = filePath;
+  var index = filePath.lastIndexOf('/');
+  if (index >= 0) {
+    fileName = filePath.substring(index + 1);
+  }
+  return fileName;
+}
+  
+async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
+  let partSizeInMB = 5;
+  let eTags = new Array<string>(urls.length);
+  var writtenParts = 0;
+  var partNumber = 0;
+  for (let i = 0; i < urls.length; i++) {
+    partNumber++;
+    var url = urls[i];
+    var partData: any;
+    var endOfFileReached: boolean;
+    [partData, endOfFileReached] = await readOnePart(source, partSizeInMB);
+
+    if (endOfFileReached) {
+      // There has been no more data to write.
+      break;
+    }
+    var eTag = await writeFilePart(partData, url);
+    writtenParts++;
+    eTags[i] = eTag;
+  }
+  return eTags.slice(0, writtenParts);
+}
+
+async function readOnePart(file: fsPromise.FileHandle, partSizeInMB: number): Promise<[Uint8Array, boolean]> {
+  const bufferSizeInBytes = partSizeInMB * 1024 * 1024;
+  var buffer = new Uint8Array(bufferSizeInBytes);
+  var readResult = await file.read(buffer, 0, bufferSizeInBytes);
+  var endOfFileReached = readResult.bytesRead == 0;
+  var partData = readResult.buffer.subarray(0, readResult.bytesRead);
+  return [partData, endOfFileReached];
+}
+
+async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
+  var eTag = "";
+    const response = await fetch(url, {
+      method: 'PUT',
+      body: part,
+      headers: {'Content-Type': 'application/octet-stream'} });
+
+    if (response.ok && response.body !== null && response.status == 200) {
+      eTag = response.headers.get("ETag")!;
+      if (eTag) {
+        eTag = eTag.substring(1, eTag.length - 1); // Remove heading and trailing double-quotation
+      }
+    } 
+  return eTag;
 }
