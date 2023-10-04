@@ -73,9 +73,9 @@ async function printAllRepositoryNames(): Promise<void> {
   const collectionResponse: RepositoryCollectionResponse = (await _RepositoryApiClient.repositoriesClient.listRepositories({}));
   const repositories: Repository[] = collectionResponse.value ?? [];
   repositories.forEach(repository => {
-    const repoName = repository.name ?? '';
-    const repoId = repository.id ?? '';
-    console.log(`Repository Name: '${repoName}' Repository Id: [${repoId}]`);
+    const repositoryName = repository.name ?? '';
+    const repositoryId = repository.id ?? '';
+    console.log(`Repository Name: '${repositoryName}' Repository Id: [${repositoryId}]`);
   });
 }
 
@@ -160,8 +160,9 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
   });
   const fieldDefinitions: FieldDefinition[] | undefined = collectionResponse.value;
   if (!fieldDefinitions) {
-    throw new Error('There is no FieldDefinition available.');
-  }
+    console.log('There is no FieldDefinition available.');
+    return;
+  } 
   for (let i = 0; i < fieldDefinitions.length; i++) {
     if (
       fieldDefinitions[i].fieldType == FieldType.String &&
@@ -173,7 +174,8 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
     }
   }
   if (!field?.name) {
-    throw new Error(`The FieldDefinition's name is undefined.`);
+    console.log(`The FieldDefinition's name is undefined.`);
+    return;
   }
 
   const fieldToUpdate = new FieldToUpdate();
@@ -199,7 +201,8 @@ async function printEntryFields(entryId: number | undefined): Promise<void> {
       entryId: entryId ?? 1 });
   const fields: Field[] | undefined = collectionResponse.value;
   if (!fields) {
-    throw new Error('There is no fields set on the entry.');
+    console.log('There is no fields set on the entry.');
+    return;
   }
   for (let i = 0; i < fields.length; i++) {
     const field: Field = fields[i];
