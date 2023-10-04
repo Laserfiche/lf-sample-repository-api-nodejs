@@ -64,7 +64,6 @@ async function main(): Promise<void> {
     await printEntryFields(importedEntryId);
     await searchForImportedDocument(sampleProjectDocumentName);
     await importLargeDocument(sampleFolderEntry.id, largeDocumentFilePath);
-
   } catch (err) {
     console.error(err);
   } finally {
@@ -343,7 +342,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
         if (taskStatus == TaskStatus.Completed) {
           console.log(`Entry Id: ${taskProgress.result?.entryId}`);
         } else if (taskStatus == TaskStatus.Failed){
-          console.log(`Errors: ${taskProgress.errors}`);
+          console.log(`Errors: ${JSON.stringify(taskProgress.errors)}`);
         } 
       }
     }
