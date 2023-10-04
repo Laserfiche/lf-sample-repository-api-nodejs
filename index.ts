@@ -277,7 +277,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       iteration++;
       
       // Step 1: Request a batch of URLs by calling the CreateMultipartUploadUrls API.
-      console.log("Requesting upload URLs...");
+      console.log(`Requesting upload URLs...`);
       const requestForURLs = prepareRequestForCreateMultipartUploadUrlsApi(iteration, numberOfUrlsRequestedInEachCall, getFileName(file.fileName), mimeType, uploadId);
       const response = await _RepositoryApiClient.entriesClient.createMultipartUploadUrls({
         repositoryId: repositoryId,
@@ -289,14 +289,14 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       }
       
       // Step 2: Split the file and write the parts to current batch of URLs.
-      console.log("Writing file parts to upload URLs...");
+      console.log(`Writing file parts to upload URLs...`);
       const eTagsForThisIteration = await writeFileParts(dataSource!, response.urls!);
       eTags.push(...eTagsForThisIteration);
       thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
     }    
 
     // Step 3: File parts are written, and eTags are ready. Call the ImportUploadedParts API.
-    console.log("Starting the import task...");
+    console.log(`Starting the import task...`);
     const pdfOptions = new ImportEntryRequestPdfOptions();
     pdfOptions.generatePages = true;
     pdfOptions.generatePagesImageType = GeneratePagesImageType.HighQualityColor;
@@ -322,7 +322,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
     const maxAttempt = 5;
     while (inProgress && attempt < maxAttempt) {
       attempt++;
-      console.log("Checking status of the import task...");
+      console.log(`Checking status of the import task...`);
       const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
         repositoryId: repositoryId,
         taskIds: taskIds
