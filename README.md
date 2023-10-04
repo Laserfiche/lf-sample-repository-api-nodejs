@@ -43,6 +43,10 @@ Sample Node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 
 ### 3. Clone this repo on your local machine
 
+```
+git clone -b v1 https://github.com/Laserfiche/lf-sample-repository-api-nodejs.git
+```
+
 ### 4. Create a .env file
 
 - Using the app picker, go to the 'Repository Administration' page and copy the Repository ID
@@ -69,6 +73,10 @@ REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 - Proper fetch client
 
 ### 1. Clone this repo on your local machine
+
+```
+git clone -b v1 https://github.com/Laserfiche/lf-sample-repository-api-nodejs.git
+```
 
 ### 2. Create a .env file
 
