@@ -155,7 +155,7 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
 async function setEntryFields(entryId: number | undefined): Promise<void> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
-  var collectionResponse = await _RepositoryApiClient.fieldDefinitionsClient.listFieldDefinitions({
+  const collectionResponse = await _RepositoryApiClient.fieldDefinitionsClient.listFieldDefinitions({
     repositoryId: repositoryId,
   });
   const fieldDefinitions: FieldDefinition[] | undefined = collectionResponse.value;
@@ -232,13 +232,13 @@ async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | un
   });
   const taskId: string = taskResponse.taskId ?? '';
   console.log(`Task Id: ${taskId}`);
-  var taskIds = [taskId]; 
+  const taskIds = [taskId]; 
   const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
     repositoryId: repositoryId,
     taskIds: taskIds
   });
   if (taskCollectionResopnse.value) {
-    var taskStatus = taskCollectionResopnse.value[0].status;
+    const taskStatus = taskCollectionResopnse.value[0].status;
     console.log(`Task status: ${taskStatus}`);
   }
 }
@@ -254,8 +254,8 @@ function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
 }
 
 async function importLargeDocument(folderEntryId: number | undefined, filePath: string): Promise<void> {
-  var eTags = new Array<string>();
-  var dataSource = null;
+  let eTags = new Array<string>();
+  let dataSource = null;
   try 
   {
     const blob = new NodeBlob([""], {
@@ -268,7 +268,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
     dataSource = await fsPromise.open(file.fileName, 'r');
     const mimeType = "application/pdf";
     const numberOfUrlsRequestedInEachCall = 10;
-    var thereAreMoreParts = true;
+    let thereAreMoreParts = true;
     let uploadId = null;
 
     let iteration = 0;
@@ -278,7 +278,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       
       // Step 1: Request a batch of URLs by calling the CreateMultipartUploadUrls API.
       console.log("Requesting upload URLs...");
-      var request1 = prepareRequestForCreateMultipartUploadUrlsApi(iteration, numberOfUrlsRequestedInEachCall, getFileName(file.fileName), mimeType, uploadId);
+      let request1 = prepareRequestForCreateMultipartUploadUrlsApi(iteration, numberOfUrlsRequestedInEachCall, getFileName(file.fileName), mimeType, uploadId);
       let response = await _RepositoryApiClient.entriesClient.createMultipartUploadUrls({
         repositoryId: repositoryId,
         request: request1
@@ -290,36 +290,36 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       
       // Step 2: Split the file and write the parts to current batch of URLs.
       console.log("Writing file parts to upload URLs...");
-      var eTagsForThisIteration = await writeFileParts(dataSource!, response.urls!);
+      let eTagsForThisIteration = await writeFileParts(dataSource!, response.urls!);
       eTags.push.apply(eTags, eTagsForThisIteration);
       thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
     }    
 
     // Step 3: File parts are written, and eTags are ready. Call the ImportUploadedParts API.
     console.log("Starting the import task...");
-    var pdfOptions = new ImportEntryRequestPdfOptions();
+    const pdfOptions = new ImportEntryRequestPdfOptions();
     pdfOptions.generatePages = true;
     pdfOptions.generatePagesImageType = GeneratePagesImageType.HighQualityColor;
     pdfOptions.generateText = true;
     pdfOptions.keepPdfAfterImport = true;
-    var finalRequest = new StartImportUploadedPartsRequest();
+    const finalRequest = new StartImportUploadedPartsRequest();
     finalRequest.uploadId = uploadId ?? '';
     finalRequest.partETags = eTags;
     finalRequest.name = getFileName(file.fileName);
     finalRequest.autoRename = true;
     finalRequest.pdfOptions = pdfOptions;
 
-    var taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startImportUploadedParts({
+    const taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startImportUploadedParts({
       repositoryId: repositoryId,
       entryId: folderEntryId ?? 1,
       request: finalRequest
     });
     const taskId: string = taskResponse.taskId ?? '';
     console.log(`Task Id: ${taskId}`);
-    var taskIds = [taskId];
-    var inProgress = true;
-    var attempt = 0;
-    var maxAttempt = 5;
+    const taskIds = [taskId];
+    let inProgress = true;
+    let attempt = 0;
+    const maxAttempt = 5;
     while (inProgress && attempt < maxAttempt) {
       attempt++;
       console.log("Checking status of the import task...");
@@ -328,8 +328,8 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
         taskIds: taskIds
       });
       if (taskCollectionResopnse.value) {
-        var taskProgress = taskCollectionResopnse.value[0];
-        var taskStatus = taskProgress.status;
+        let taskProgress = taskCollectionResopnse.value[0];
+        let taskStatus = taskProgress.status;
         inProgress = taskStatus == TaskStatus.InProgress;
         console.log(`Task status: ${taskStatus}`);
         if (taskStatus == TaskStatus.Completed) {
@@ -347,7 +347,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
 }
 
 function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, numberOfUrlsRequestedInEachCall: number, fileName: string, mimeType: string, uploadId? : string | null): CreateMultipartUploadUrlsRequest {
-  var parameters = (iteration == 1) ? {
+  const parameters = (iteration == 1) ? {
     startingPartNumber: 1,
     numberOfParts: numberOfUrlsRequestedInEachCall,
     fileName: fileName,
@@ -362,7 +362,7 @@ function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, number
 
 function getFileName(filePath: string): string {
   let fileName = filePath;
-  var index = filePath.lastIndexOf('/');
+  const index = filePath.lastIndexOf('/');
   if (index >= 0) {
     fileName = filePath.substring(index + 1);
   }
@@ -372,20 +372,20 @@ function getFileName(filePath: string): string {
 async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
   let partSizeInMB = 5;
   let eTags = new Array<string>(urls.length);
-  var writtenParts = 0;
-  var partNumber = 0;
+  let writtenParts = 0;
+  let partNumber = 0;
   for (let i = 0; i < urls.length; i++) {
     partNumber++;
-    var url = urls[i];
-    var partData: any;
-    var endOfFileReached: boolean;
+    let url = urls[i];
+    let partData: any;
+    let endOfFileReached: boolean;
     [partData, endOfFileReached] = await readOnePart(source, partSizeInMB);
 
     if (endOfFileReached) {
       // There has been no more data to write.
       break;
     }
-    var eTag = await writeFilePart(partData, url);
+    let eTag = await writeFilePart(partData, url);
     writtenParts++;
     eTags[i] = eTag;
   }
@@ -394,25 +394,25 @@ async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
 
 async function readOnePart(file: fsPromise.FileHandle, partSizeInMB: number): Promise<[Uint8Array, boolean]> {
   const bufferSizeInBytes = partSizeInMB * 1024 * 1024;
-  var buffer = new Uint8Array(bufferSizeInBytes);
-  var readResult = await file.read(buffer, 0, bufferSizeInBytes);
-  var endOfFileReached = readResult.bytesRead == 0;
-  var partData = readResult.buffer.subarray(0, readResult.bytesRead);
+  const buffer = new Uint8Array(bufferSizeInBytes);
+  const readResult = await file.read(buffer, 0, bufferSizeInBytes);
+  const endOfFileReached = readResult.bytesRead == 0;
+  const partData = readResult.buffer.subarray(0, readResult.bytesRead);
   return [partData, endOfFileReached];
 }
 
 async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
-  var eTag = "";
-    const response = await fetch(url, {
-      method: 'PUT',
-      body: part,
-      headers: {'Content-Type': 'application/octet-stream'} });
+  let eTag = "";
+  const response = await fetch(url, {
+    method: 'PUT',
+    body: part,
+    headers: {'Content-Type': 'application/octet-stream'} });
 
-    if (response.ok && response.body !== null && response.status == 200) {
-      eTag = response.headers.get("ETag")!;
-      if (eTag) {
-        eTag = eTag.substring(1, eTag.length - 1); // Remove heading and trailing double-quotation
-      }
-    } 
+  if (response.ok && response.body !== null && response.status == 200) {
+    eTag = response.headers.get("ETag")!;
+    if (eTag) {
+      eTag = eTag.substring(1, eTag.length - 1); // Remove heading and trailing double-quotation
+    }
+  } 
   return eTag;
 }
