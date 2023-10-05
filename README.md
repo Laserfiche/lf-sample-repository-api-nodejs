@@ -100,7 +100,7 @@ APISERVER_REPOSITORY_API_BASE_URL="<API Server Base Url (ex: https://example.com
 
 ## Build and Run this App
 
-- Open a terminal window
+- Open a terminal window.
 - Enter the following commands:
 
 ```node
