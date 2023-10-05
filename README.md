@@ -59,7 +59,7 @@ ACCESS_KEY="<base-64 Access Key string created from step 2>"
 REPOSITORY_ID="<Repository ID from the 'Repository Administration' page>"
 ```
 - Note: The .env file is used in local development environment to set operating system environment variables. DO NOT
-  check-in the .env file in Git
+  check-in the .env file in Git.
 
 ## Self-Hosted Prerequisites
 
