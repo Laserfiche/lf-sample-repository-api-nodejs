@@ -40,7 +40,7 @@ Sample Node service app that connects to a Laserfiche Cloud or Self-Hosted Repos
 - Select the first option (i.e. Create a public 'Access Key'...).
 - Click the 'Download key as base-64 string' button for later use.
 - Click OK.
-- Select the required scope(s) in the 'Authentication' tab. 
+- Select the required scope(s) in the 'Authentication' tab. For running this sample project, both 'repository.Read' and 'repository.Write' scopes are required.
 - Click on the 'Update scopes' button.
 
 ### 3. Clone this repo on your local machine
