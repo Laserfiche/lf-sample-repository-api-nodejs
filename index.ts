@@ -73,6 +73,9 @@ async function main(): Promise<void> {
   }
 }
 
+/**
+ * Prints the information of all the available repositories.
+ */
 async function printAllRepositoryNames(): Promise<void> {
   const collectionResponse: RepositoryCollectionResponse = (await _RepositoryApiClient.repositoriesClient.listRepositories({}));
   const repositories: Repository[] = collectionResponse.value ?? [];
@@ -83,6 +86,9 @@ async function printAllRepositoryNames(): Promise<void> {
   });
 }
 
+/**
+ * Prints the name of the folder for the given folder's entry Id.
+ */
 async function printFolderName(folderEntryId: number | undefined): Promise<void> {
   const rootFolderEntry: Entry = await _RepositoryApiClient.entriesClient.getEntry({
     repositoryId: repositoryId,
@@ -92,6 +98,9 @@ async function printFolderName(folderEntryId: number | undefined): Promise<void>
   console.log(`Root Folder Name: '${rootFolderName}'`);
 }
 
+/***
+ * Prints the information of the child entries of the given folder's entry Id.
+ */
 async function printFolderChildrenInformation(folderEntryId: number| undefined): Promise<void> {
   const collectionResponse: EntryCollectionResponse = await _RepositoryApiClient.entriesClient.listEntries({
     repositoryId: repositoryId,
@@ -106,6 +115,9 @@ async function printFolderChildrenInformation(folderEntryId: number| undefined):
   }
 }
 
+/**
+ * Creates a sample folder in the root folder.
+ */
 async function createSampleProjectFolder(): Promise<Entry> {
   const newEntryName = 'JS sample project folder';
   const request: CreateEntryRequest = new CreateEntryRequest();
@@ -122,6 +134,9 @@ async function createSampleProjectFolder(): Promise<Entry> {
   return newEntry;
 }
 
+/**
+ * Imports a document into the folder specified by the given entry Id.
+ */
 async function importDocument(folderEntryId: number | undefined, sampleProjectFileName: string): Promise<number> {
   let blob: any;
   const obj = { hello: 'world' };
@@ -156,6 +171,9 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
   return importedEntryId;
 }
 
+/**
+ * Sets fields on the entry specified by the given entry Id.
+ */
 async function setEntryFields(entryId: number | undefined): Promise<void> {
   let field = null;
   const fieldValue = 'JS sample project set entry value';
@@ -198,6 +216,9 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
   }
 }
 
+/**
+ * Prints the fields assigned to the entry specified by the given entry Id.
+ */
 async function printEntryFields(entryId: number | undefined): Promise<void> {
   const collectionResponse: FieldCollectionResponse =
     await _RepositoryApiClient.entriesClient.listFields({
@@ -214,7 +235,9 @@ async function printEntryFields(entryId: number | undefined): Promise<void> {
   }
 }
 
-
+/**
+ * Performs a simple search for the given file name, and prints out the search results.
+ */
 async function searchForImportedDocument(sampleProjectFileName: string): Promise<void> {
   const searchRequest: SearchEntryRequest = new SearchEntryRequest();
   searchRequest.searchCommand = `({LF:Basic ~= "${sampleProjectFileName}", option="DFANLT"})`;
@@ -231,6 +254,9 @@ async function searchForImportedDocument(sampleProjectFileName: string): Promise
   }
 }
 
+/**
+ * Deletes the sample project folder.
+ */
 async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | undefined): Promise<void> {
   console.log(`Deleting all sample project entries...`);
   const taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startDeleteEntry({
@@ -250,16 +276,9 @@ async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | un
   }
 }
 
-function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
-  return repositoryApiClient;
-}
-
-function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username, password, baseUrl);
-  return repositoryApiClient;
-}
-
+/**
+ * Uses the asynchronous import API to import a large file into the specified folder.
+ */
 async function importLargeDocument(folderEntryId: number | undefined, filePath: string): Promise<void> {
   const eTags = new Array<string>();
   let dataSource = null;
@@ -302,7 +321,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
     }    
 
-    // Step 3: File parts are written, and eTags are ready. Call the ImportUploadedParts API.
+    // Step 3: File parts are written, and eTags are ready. Start the import task.
     console.log(`Starting the import task...`);
     const pdfOptions = new ImportEntryRequestPdfOptions();
     pdfOptions.generatePages = true;
@@ -324,6 +343,8 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
     const taskId: string = taskResponse.taskId ?? '';
     console.log(`Task Id: ${taskId}`);
     const taskIds = [taskId];
+
+    // Check/print the status of the import task.
     let inProgress = true;
     let attempt = 0;
     const maxAttempt = 5;
@@ -353,6 +374,9 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
   }
 }
 
+/**
+ * Prepares the request body for calling the CreateMultipartUploadUrls API.
+ */
 function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, numberOfUrlsRequestedInEachCall: number, fileName: string, mimeType: string, uploadId? : string | null): CreateMultipartUploadUrlsRequest {
   const parameters = (iteration == 1) ? {
     startingPartNumber: 1,
@@ -367,6 +391,9 @@ function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, number
   return CreateMultipartUploadUrlsRequest.fromJS(parameters);
 }
 
+/**
+ * Given a file path, returns the name of the file.
+ */
 function getFileName(filePath: string): string {
   let fileName = filePath;
   const index = filePath.lastIndexOf('/');
@@ -376,6 +403,9 @@ function getFileName(filePath: string): string {
   return fileName;
 }
   
+/**
+ * Reads data from the given source and writes it, in parts, into the given URLs.
+ */
 async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
   const partSizeInMB = 5;
   const eTags = new Array<string>(urls.length);
@@ -395,6 +425,9 @@ async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
   return eTags.slice(0, writtenParts);
 }
 
+/**
+ * Reads and returns one part from the given file.
+ */
 async function readOnePart(file: fsPromise.FileHandle, partSizeInMB: number): Promise<[Uint8Array, boolean]> {
   const bufferSizeInBytes = partSizeInMB * 1024 * 1024;
   const buffer = new Uint8Array(bufferSizeInBytes);
@@ -404,6 +437,9 @@ async function readOnePart(file: fsPromise.FileHandle, partSizeInMB: number): Pr
   return [partData, endOfFileReached];
 }
 
+/**
+ * Writes a given part into a given URL.
+ */
 async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
   let eTag = "";
   const response = await fetch(url, {
@@ -419,3 +455,20 @@ async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
   } 
   return eTag;
 }
+
+/**
+ * Creates RepositoryApiClient fro cloud, from an access key.
+ */
+function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
+  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
+  return repositoryApiClient;
+}
+
+/**
+ * Creates RepositoryApiClient for self-hosted mode, from a username/password.
+ */
+function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
+  const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username, password, baseUrl);
+  return repositoryApiClient;
+}
+
