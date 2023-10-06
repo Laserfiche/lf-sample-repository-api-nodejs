@@ -172,7 +172,7 @@ async function importDocument(folderEntryId: number | undefined, sampleProjectFi
 }
 
 /**
- * Sets fields on the entry specified by the given entry Id.
+ * Sets a string field on the entry specified by the given entry Id.
  */
 async function setEntryFields(entryId: number | undefined): Promise<void> {
   let field = null;
@@ -457,7 +457,7 @@ async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
 }
 
 /**
- * Creates RepositoryApiClient fro cloud, from an access key.
+ * Creates RepositoryApiClient for cloud, from an access key.
  */
 function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
