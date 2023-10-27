@@ -1,3 +1,5 @@
+// Copyright (c) Laserfiche.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 import 'dotenv/config';
 import { authorizationTypeEnum as authType } from './AuthorizationType.js';
 import { AccessKey, createFromBase64EncodedAccessKey } from '@laserfiche/lf-api-client-core';
