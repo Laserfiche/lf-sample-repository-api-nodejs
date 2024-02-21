@@ -24,7 +24,7 @@ import {
   ImportEntryRequestPdfOptions,
   StartImportUploadedPartsRequest,
   GeneratePagesImageType,
-  TaskStatus
+  TaskStatus,
 } from '@laserfiche/lf-repository-api-client-v2';
 import {
   OAuthAccessKey,
@@ -79,9 +79,10 @@ async function main(): Promise<void> {
  * Prints the information of all the available repositories.
  */
 async function printAllRepositoryNames(): Promise<void> {
-  const collectionResponse: RepositoryCollectionResponse = (await _RepositoryApiClient.repositoriesClient.listRepositories({}));
+  const collectionResponse: RepositoryCollectionResponse =
+    await _RepositoryApiClient.repositoriesClient.listRepositories({});
   const repositories: Repository[] = collectionResponse.value ?? [];
-  repositories.forEach(repository => {
+  repositories.forEach((repository) => {
     const repositoryName = repository.name ?? '';
     const repositoryId = repository.id ?? '';
     console.log(`Repository Name: '${repositoryName}' Repository Id: [${repositoryId}]`);
@@ -103,7 +104,7 @@ async function printFolderName(folderEntryId: number | undefined): Promise<void>
 /***
  * Prints the information of the child entries of the given folder's entry Id.
  */
-async function printFolderChildrenInformation(folderEntryId: number| undefined): Promise<void> {
+async function printFolderChildrenInformation(folderEntryId: number | undefined): Promise<void> {
   const collectionResponse: EntryCollectionResponse = await _RepositoryApiClient.entriesClient.listEntries({
     repositoryId: repositoryId,
     entryId: folderEntryId ?? 1,
@@ -140,7 +141,7 @@ async function createSampleProjectFolder(): Promise<Entry> {
  * Imports a document into the folder specified by the given entry Id.
  */
 async function importDocument(folderEntryId: number | undefined, sampleProjectFileName: string): Promise<number> {
-  let blob: any;
+  let blob: Blob | NodeBlob;
   const obj = { hello: 'world' };
   if (isBrowser()) {
     blob = new Blob([JSON.stringify(obj, null, 2)], {
@@ -186,7 +187,7 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
   if (!fieldDefinitions) {
     console.log('There is no FieldDefinition available.');
     return;
-  } 
+  }
   for (let i = 0; i < fieldDefinitions.length; i++) {
     if (
       fieldDefinitions[i].fieldType == FieldType.String &&
@@ -222,10 +223,10 @@ async function setEntryFields(entryId: number | undefined): Promise<void> {
  * Prints the fields assigned to the entry specified by the given entry Id.
  */
 async function printEntryFields(entryId: number | undefined): Promise<void> {
-  const collectionResponse: FieldCollectionResponse =
-    await _RepositoryApiClient.entriesClient.listFields({
-      repositoryId: repositoryId, 
-      entryId: entryId ?? 1 });
+  const collectionResponse: FieldCollectionResponse = await _RepositoryApiClient.entriesClient.listFields({
+    repositoryId: repositoryId,
+    entryId: entryId ?? 1,
+  });
   const fields: Field[] | undefined = collectionResponse.value;
   if (!fields) {
     console.log('There is no fields set on the entry.');
@@ -233,7 +234,9 @@ async function printEntryFields(entryId: number | undefined): Promise<void> {
   }
   for (let i = 0; i < fields.length; i++) {
     const field: Field = fields[i];
-    console.log(`${i + 1}: Id: ${field.id} Name: '${field.name}' Type: ${field.fieldType} Value: ${JSON.stringify(field.values)}}`);
+    console.log(
+      `${i + 1}: Id: ${field.id} Name: '${field.name}' Type: ${field.fieldType} Value: ${JSON.stringify(field.values)}}`
+    );
   }
 }
 
@@ -267,10 +270,10 @@ async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | un
   });
   const taskId: string = taskResponse.taskId ?? '';
   console.log(`Task Id: ${taskId}`);
-  const taskIds = [taskId]; 
+  const taskIds = [taskId];
   const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
     repositoryId: repositoryId,
-    taskIds: taskIds
+    taskIds: taskIds,
   });
   if (taskCollectionResopnse.value) {
     const taskStatus = taskCollectionResopnse.value[0].status;
@@ -284,17 +287,16 @@ async function deleteSampleProjectFolder(sampleProjectFolderEntryId: number | un
 async function importLargeDocument(folderEntryId: number | undefined, filePath: string): Promise<void> {
   const eTags = new Array<string>();
   let dataSource = null;
-  try 
-  {
-    const blob = new NodeBlob([""], {
-      type: "application/json",
+  try {
+    const blob = new NodeBlob([''], {
+      type: 'application/json',
     });
     const file: FileParameter = {
       fileName: filePath,
-      data: blob
-    }
+      data: blob,
+    };
     dataSource = await fsPromise.open(file.fileName, 'r');
-    const mimeType = "application/pdf";
+    const mimeType = 'application/pdf';
     const numberOfUrlsRequestedInEachCall = 10;
     let thereAreMoreParts = true;
     let uploadId = null;
@@ -303,25 +305,35 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
     // Iteratively request URLs and write file parts into the URLs.
     while (thereAreMoreParts) {
       iteration++;
-      
+
       // Step 1: Request a batch of URLs by calling the CreateMultipartUploadUrls API.
       console.log(`Requesting upload URLs...`);
-      const requestForURLs = prepareRequestForCreateMultipartUploadUrlsApi(iteration, numberOfUrlsRequestedInEachCall, getFileName(file.fileName), mimeType, uploadId);
+      const requestForURLs = prepareRequestForCreateMultipartUploadUrlsApi(
+        iteration,
+        numberOfUrlsRequestedInEachCall,
+        getFileName(file.fileName),
+        mimeType,
+        uploadId
+      );
       const response = await _RepositoryApiClient.entriesClient.createMultipartUploadUrls({
         repositoryId: repositoryId,
-        request: requestForURLs
+        request: requestForURLs,
       });
 
       if (iteration == 1) {
         uploadId = response.uploadId;
       }
-      
+
       // Step 2: Split the file and write the parts to current batch of URLs.
       console.log(`Writing file parts to upload URLs...`);
-      const eTagsForThisIteration = await writeFileParts(dataSource!, response.urls!);
-      eTags.push(...eTagsForThisIteration);
-      thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
-    }    
+      if (dataSource && response.urls) {
+        const eTagsForThisIteration = await writeFileParts(dataSource, response.urls);
+        eTags.push(...eTagsForThisIteration);
+        thereAreMoreParts = eTagsForThisIteration.length == numberOfUrlsRequestedInEachCall;
+      } else {
+        throw new Error('Unexpected null dataSource or response.urls');
+      }
+    }
 
     // Step 3: File parts are written, and eTags are ready. Start the import task.
     console.log(`Starting the import task...`);
@@ -340,7 +352,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
     const taskResponse: StartTaskResponse = await _RepositoryApiClient.entriesClient.startImportUploadedParts({
       repositoryId: repositoryId,
       entryId: folderEntryId ?? 1,
-      request: finalRequest
+      request: finalRequest,
     });
     const taskId: string = taskResponse.taskId ?? '';
     console.log(`Task Id: ${taskId}`);
@@ -355,7 +367,7 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
       console.log(`Checking status of the import task...`);
       const taskCollectionResopnse: TaskCollectionResponse = await _RepositoryApiClient.tasksClient.listTasks({
         repositoryId: repositoryId,
-        taskIds: taskIds
+        taskIds: taskIds,
       });
       if (taskCollectionResopnse.value) {
         const taskProgress = taskCollectionResopnse.value[0];
@@ -364,9 +376,9 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
         console.log(`Task status: ${taskStatus}`);
         if (taskStatus == TaskStatus.Completed) {
           console.log(`Entry Id: ${taskProgress.result?.entryId}`);
-        } else if (taskStatus == TaskStatus.Failed){
+        } else if (taskStatus == TaskStatus.Failed) {
           console.log(`Errors: ${JSON.stringify(taskProgress.errors)}`);
-        } 
+        }
       }
     }
   } finally {
@@ -379,17 +391,26 @@ async function importLargeDocument(folderEntryId: number | undefined, filePath: 
 /**
  * Prepares the request body for calling the CreateMultipartUploadUrls API.
  */
-function prepareRequestForCreateMultipartUploadUrlsApi(iteration: number, numberOfUrlsRequestedInEachCall: number, fileName: string, mimeType: string, uploadId? : string | null): CreateMultipartUploadUrlsRequest {
-  const parameters = (iteration == 1) ? {
-    startingPartNumber: 1,
-    numberOfParts: numberOfUrlsRequestedInEachCall,
-    fileName: fileName,
-    mimeType: mimeType
-  } : {
-    uploadId: uploadId,
-    startingPartNumber: (iteration - 1) * numberOfUrlsRequestedInEachCall + 1,
-    numberOfParts: numberOfUrlsRequestedInEachCall,
-  };
+function prepareRequestForCreateMultipartUploadUrlsApi(
+  iteration: number,
+  numberOfUrlsRequestedInEachCall: number,
+  fileName: string,
+  mimeType: string,
+  uploadId?: string | null
+): CreateMultipartUploadUrlsRequest {
+  const parameters =
+    iteration == 1
+      ? {
+          startingPartNumber: 1,
+          numberOfParts: numberOfUrlsRequestedInEachCall,
+          fileName: fileName,
+          mimeType: mimeType,
+        }
+      : {
+          uploadId: uploadId,
+          startingPartNumber: (iteration - 1) * numberOfUrlsRequestedInEachCall + 1,
+          numberOfParts: numberOfUrlsRequestedInEachCall,
+        };
   return CreateMultipartUploadUrlsRequest.fromJS(parameters);
 }
 
@@ -404,11 +425,11 @@ function getFileName(filePath: string): string {
   }
   return fileName;
 }
-  
+
 /**
  * Reads data from the given source and writes it, in parts, into the given URLs.
  */
-async function writeFileParts(source: any, urls: string[]): Promise<string[]> {
+async function writeFileParts(source: fsPromise.FileHandle, urls: string[]): Promise<string[]> {
   const partSizeInMB = 5;
   const eTags = new Array<string>(urls.length);
   let writtenParts = 0;
@@ -443,18 +464,22 @@ async function readOnePart(file: fsPromise.FileHandle, partSizeInMB: number): Pr
  * Writes a given part into a given URL.
  */
 async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
-  let eTag = "";
+  let eTag: string | undefined;
   const response = await fetch(url, {
     method: 'PUT',
     body: part,
-    headers: {'Content-Type': 'application/octet-stream'} });
+    headers: { 'Content-Type': 'application/octet-stream' },
+  });
 
   if (response.ok && response.body !== null && response.status == 200) {
-    eTag = response.headers.get("ETag")!;
+    eTag = response.headers.get('ETag') ?? undefined;
     if (eTag) {
       eTag = eTag.substring(1, eTag.length - 1); // Remove heading and trailing double-quotation
     }
-  } 
+  }
+  if (!eTag) {
+    throw new Error('ETag is not defined');
+  }
   return eTag;
 }
 
@@ -462,7 +487,11 @@ async function writeFilePart(part: Uint8Array, url: string): Promise<string> {
  * Creates RepositoryApiClient for cloud, from an access key.
  */
 function createCloudRepositoryApiClient(scope: string): IRepositoryApiClient {
-  const repositoryApiClient = RepositoryApiClient.createFromAccessKey(servicePrincipalKey, OAuthAccessKey, scope);
+  const repositoryApiClient: RepositoryApiClient = RepositoryApiClient.createFromAccessKey(
+    servicePrincipalKey,
+    OAuthAccessKey,
+    scope
+  );
   return repositoryApiClient;
 }
 
@@ -473,4 +502,3 @@ function createSelfHostedRepositoryApiClient(): IRepositoryApiClient {
   const repositoryApiClient = RepositoryApiClient.createFromUsernamePassword(repositoryId, username, password, baseUrl);
   return repositoryApiClient;
 }
-

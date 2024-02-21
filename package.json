@@ -12,9 +12,9 @@
     "author": "Laserfiche",
     "license": "MIT",
     "dependencies": {
-        "@laserfiche/lf-api-client-core": "^1.1.8",
+        "@laserfiche/lf-api-client-core": "^1.1.10",
         "@laserfiche/lf-js-utils": "4.0.7",
-        "@laserfiche/lf-repository-api-client-v2": "^1.0.0",
+        "@laserfiche/lf-repository-api-client-v2": "^1.0.1",
         "@types/node": "^18.11.9",
         "dotenv": "^16.0.3",
         "isomorphic-fetch": "^3.0.0"
@@ -22,7 +22,7 @@
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^5.44.0",
         "@typescript-eslint/parser": "^5.44.0",
-        "eslint": "^8.28.0",
+        "eslint": "^8.56.0",
         "eslint-plugin-react": "^7.31.11"
     }
 }
